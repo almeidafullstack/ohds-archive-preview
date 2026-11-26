@@ -1,0 +1,271 @@
+# OHD Photo Archives — widget rebuild
+
+Replacement for the dead `ohds-archives.org/archives/index.asp`, built to embed on
+[oregonhistoric.org](https://www.oregonhistoric.org/) (Squarespace).
+
+## What it does
+
+Map-first browser for 822 archival photos of the Oregon Historic District, Dayton,
+Ohio: 763 of buildings at 241 addresses, plus 59 streetscape views. Photos captioned
+with a span of house numbers are attached to every address in the span, so the
+collection resolves to 1,019 address-photo links. Every count on the page is of
+unique photos, so the visitor sees 822 everywhere.
+
+- **Map** of the district with a pin per address, its area graduated by photo count (square-root scaled, capped at 16 so one outlier does not flatten the rest) against a small legend; framed automatically on the photographed addresses, and re-framed on whatever a search or year filter leaves
+- **Amber-ringed pins** mark the 120 addresses photographed in more than one year, the ones that open into Compare years
+- **Tap targets** are 44px on touch screens, and a tap goes to the nearest dot, so dense blocks stay usable
+- **Sidebar** of address tiles grouped by street, collapsed so the whole district scans in one screen, except that on desktop the street with the most then-and-now addresses opens on first load; each tile shows a cover photo, year range, and photo count
+- **About this archive** note at the foot of the list, built from the data, with a `PROVENANCE` slot in `docs/index.html` for OHDS's own account of who made the photos
+- **Streetscapes** appear as their own group in the sidebar, alongside the streets
+- **Year filter** (thin years fold into the chip before them, e.g. "1977–81"; undated photos are labelled "Date unknown") in two interchangeable forms, switched by the toggle at the right of the year row: multi-select chips, or a timeline slider that snaps to the years the collection actually holds, with a final stop for undated photos. The timeline stays live inside the photo viewer, where years the open address has nothing from are dimmed
+- **Site navigation** mirroring oregonhistoric.org's header, so the archive reads as part of the society's site and always has a way back
+- **Forgiving search** across address, street, and streetscape captions: "22 Brown Street", "east fifth", "5th st", "tecumsh" and "brown 22" all find their match. A miss names what was searched, offers the nearest photographed addresses on that street, and invites the visitor to share a photo
+- **First-visit prompt** with three featured buildings that open straight into Compare years; a "Featured buildings" link above the list brings it back after it is dismissed
+- **Share a photo** links (sidebar, empty state, viewer) open the OHDS submission form (a Google Form, `SHARE_FORM` in `docs/index.html`) in a new tab; nothing is sent from the page itself. Set `SHARE_FIELD` to the entry ID of the form's address question and each link arrives with the building's address filled in
+- **Map popups** carrying a cover image, a scrollable thumbnail gallery of everything at that address, an optional description, and a link into the full viewer
+- **Lightbox** with a thumbnail strip of real buttons, keyboard navigation, and neighbor preloading; it closes with Close, Escape, or the browser's Back button, never on a stray click beside the photo
+- **Compare years** side by side for the 118 addresses photographed in more than one year; it defaults to the widest time gap available and any second photo can be picked from the strip
+- **Deep links** carry the whole view: `#a=` (address open in the viewer), `#p=` (address with its map popup open), `#v=scenes`, `#y=` (years), `#q=` (search). Opening the viewer adds a history entry so Back closes it
+- Responsive down to phone width, where the navigation collapses to a Menu button, the page title stays visible, the year filter defaults to the timeline, the sidebar becomes a drawer, and Compare stacks vertically
+- **Accessibility:** the viewer takes focus, makes the page behind it inert, and returns focus on close; images carry their captions as alt text; animations respect reduced-motion settings
+
+## No external dependencies
+
+The widget makes **zero network calls beyond its own folder**. No CDN, no tile server,
+no font service, no analytics. Verified by exercising every feature and reading
+`performance.getEntriesByType('resource')`: 45 requests, one origin.
+
+That cost three replacements:
+
+| Was | Now |
+|---|---|
+| Leaflet from unpkg | `map.js`, a ~320-line SVG pan/zoom map written for this |
+| OpenStreetMap raster tiles | `basemap.json`, a static vector basemap baked at build time |
+| Google Fonts | `fonts/` + `fonts.css`, self-hosted woff2 (both faces are OFL) |
+
+The basemap is 263KB: 3,446 SVG paths (1,453 building footprints, 908 road segments,
+973 paths, rail, water, parks) plus 101 street labels, projected to Web Mercator and
+drawn in a single `<g>` that pans and zooms as one transform. Pin radii, label sizes,
+and stroke widths counter-scale so they hold a constant screen size at any zoom.
+
+OSM data is ODbL. The attribution sits in the map's bottom-right corner and must stay.
+
+## Layout
+
+```
+docs/                the published site — GitHub Pages serves this folder
+  .nojekyll          REQUIRED: without it Pages hides every _scenes/ photo
+  index.html         app shell, styles, and all non-map behaviour
+  map.js             the SVG map engine (no dependencies)
+  basemap.json       static vector basemap, built once from OSM
+  data.json          241 addresses + 59 scenes
+  fonts.css, fonts/  self-hosted Young Serif + Bitter (4 woff2 files)
+  img/               OHDS logo, favicon, and the share-preview image
+  favicon.ico        fallback icon for browsers that ask for it by name
+  CNAME              discover.oregonhistoric.org
+  thumbs/            480px webp   (25MB)
+  view/              1800px webp  (233MB)
+  embed.html         iframe harness, to preview the embed as Squarespace renders it
+tools/
+  build_basemap.py     regenerates docs/basemap.json from an Overpass extract
+  build_squarespace.py builds the single-code-block alternative
+  clean_captions.py    turns delivered filenames into readable captions; additive
+  expand_ranges.py     re-links span-labelled photos; additive
+  dedupe.py            drops the near-duplicates listed in duplicates.json; idempotent
+  osm-extract.json     the raw Overpass response the current basemap came from
+squarespace/
+  ohd-archive-block.html   one-code-block build, the no-external-host fallback
+```
+
+There is one copy of every file. `docs/` is both the source you edit and the folder
+that ships; the app has no build step, so a separate source tree would only be a
+second thing to keep in sync.
+
+`docs/` is 259MB across 1,823 files.
+
+## The photo originals live outside this repo
+
+The 3336px originals (845MB) are
+deliberately **not** committed. Only the webp derivatives are. Keep the originals
+backed up somewhere else: this repo is not the archival master.
+
+## Running locally
+
+```bash
+python3 -m http.server 8767 --directory docs
+```
+
+Then open `http://localhost:8767/` for the widget, or
+`http://localhost:8767/embed.html` to see it inside an iframe.
+
+## Hosting: GitHub Pages
+
+In **Settings → Pages**, set Source to *Deploy from a branch*, branch `main`, folder
+`/docs`. The site is served at `https://discover.oregonhistoric.org/` via `docs/CNAME`; the old `github.io` address redirects there.
+
+```bash
+git remote add origin git@github.com:<user>/<repo>.git
+git push -u origin main
+```
+
+Sizes are well inside the limits: 259MB against a 1GB soft cap, largest single file
+795KB against a 100MB cap. No Git LFS, no Actions, no build step.
+
+`docs/.nojekyll` is not optional. GitHub Pages runs Jekyll by default, and Jekyll
+hides any path beginning with an underscore. Without that file all 59 streetscapes
+under `thumbs/_scenes/` and `view/_scenes/` return 404.
+
+## Site navigation
+
+The archive runs as its own site, so the header at the top of `docs/index.html`
+copies oregonhistoric.org's navigation: logo home, Get Involved (Membership,
+Donate), Calendar, About (About OHDS, History, Newcom Park), Merch, Contact. The cart
+is left out on purpose; its count lives on the Squarespace domain and can't be shown
+here.
+
+The links are hard-coded. **When the Squarespace navigation changes, edit the
+`<header class="site-nav">` block to match.** The logo is a self-hosted copy in
+`docs/img/` so the page still makes no outside requests.
+
+Embedding in a Squarespace page remains possible; [EMBED.md](EMBED.md) has the
+snippet. It is not the chosen path.
+
+## Alternative: everything inside Squarespace
+
+If the site must not depend on an outside host at all, `tools/build_squarespace.py`
+produces `squarespace/ohd-archive-block.html`: one Code Block holding the markup,
+scoped styles, map engine, basemap, and address data inlined, at 235,733 characters
+against Squarespace's ~300,000 character cap. CSS is scoped under `#ohd-archive` so
+it cannot restyle the host page, and the widget inherits the site's own webfonts,
+so no font upload is needed.
+
+The photos are what this cannot solve. Squarespace's Custom Files area accepts only
+`.jpg .png .gif .ttf .otf .webp .woff` — no `.js`, no `.json` — and nothing on the
+platform will serve a 1,800-file tree. The 822 photos would have to be bulk-uploaded
+into Squarespace galleries and their CDN URLs harvested once via `?format=json`
+(confirmed working on oregonhistoric.org) into a filename-to-URL map baked into the
+block. That is a large manual step, and re-uploading any photo breaks its link.
+
+Use this path only if an outside host is ruled out. GitHub Pages is simpler and
+keeps the photos in version control.
+
+## Tile covers and shared wide shots
+
+A photo captioned with a span covers a row of buildings and is attached to every
+address in it, which made the sidebar repetitive: filtering to 1974 once put the
+same wide shot on ten tiles out of 37.
+
+Two things address that, neither of which changes what a photo is attached to:
+
+- **Cover choice prefers the narrowest span.** An address with its own photo shows
+  that instead of the row shot. Distinct covers at 1974 went from 15 to 21, and
+  across the whole set from 207 to 220.
+- **Addresses left sharing a cover are folded into one cluster tile**, labelled with
+  the span the photo claims and the number of addresses under it. Clicking it
+  expands in place: the cluster head becomes a slim bar and the real address tiles
+  appear beneath, each behaving exactly as a standalone tile does.
+
+Clustering is by cover, not by adjacency, because a filter can leave gaps in which
+addresses of a span are on screen and neighbour-only grouping would still show the
+same photo twice in one street.
+
+The result is no duplicate image anywhere on screen, in any filter state: 1974 goes
+from 37 tiles showing 15 distinct photos to 21 tiles showing 21, and the unfiltered
+sidebar from 241 tiles to 281 visible elements across 302 addresses with zero repeats.
+
+Nothing is hidden permanently. Selecting an address from the map, the search box, or
+a deep link opens its cluster first, so every address stays reachable. The viewer and
+the photo strip are untouched: every address still shows every photo it is attached
+to, in chronological order.
+
+## Descriptions
+
+Every address in `docs/data.json` carries a `description` field, empty for now:
+
+```json
+{ "address": "22 Brown St", "street": "Brown St", "lat": 39.75, "lon": -84.18,
+  "description": "", "photos": [ ... ] }
+```
+
+Fill it in and the text appears in two places with no other change: in the map popup
+for that address, and under the title in the photo viewer. Empty descriptions render
+nothing at all, so partial coverage is fine. Bump `BUILD` in `docs/index.html` after
+editing so browsers refetch the data.
+
+## Captions
+
+Delivered filenames are not captions ("8-12 Clay St., July 12, 1973 n.jpg").
+`tools/clean_captions.py` writes a readable `caption` beside each `original`, fixes
+known typos, restores lost hyphens in spans, and spells out direction codes
+("(W)" becomes "looking west"). The trailing n / s on many 1973 shots and the a / b
+/ 1 / 2 variant markers are dropped from captions because their meaning isn't
+confirmed; they remain in `original`.
+
+```bash
+python3 tools/clean_captions.py --dry-run   # print a sample
+python3 tools/clean_captions.py             # write docs/data.json
+```
+
+## Range-labelled photos
+
+Many photos are captioned with a span ("100-104 Brown St") because one frame shows
+several buildings. `tools/expand_ranges.py` links each of those to every existing
+address inside the span, recovers photos that no address referenced at all, and
+sorts each address's photos oldest first with undated last. It is additive and safe
+to re-run.
+
+```bash
+python3 tools/expand_ranges.py --dry-run   # report only
+python3 tools/expand_ranges.py             # write docs/data.json
+```
+
+It follows the span literally, so "500-510 E. Fifth St" also attaches to 501 across
+the street. Set `PARITY_STRICT = True` in the script to restrict a span to the
+parity of its endpoints when they agree.
+
+## Regenerating the basemap
+
+Only needed if the district's streets change or the bbox should move.
+
+```bash
+curl -A "OHDS-archive-map-build/1.0" -X POST https://overpass-api.de/api/interpreter \
+  --data-urlencode 'data=[out:json][timeout:90];(way["highway"](39.7500,-84.1930,39.7660,-84.1730);way["building"](39.7500,-84.1930,39.7660,-84.1730);way["natural"="water"](39.7500,-84.1930,39.7660,-84.1730);way["waterway"](39.7500,-84.1930,39.7660,-84.1730);way["leisure"="park"](39.7500,-84.1930,39.7660,-84.1730);way["landuse"](39.7500,-84.1930,39.7660,-84.1730);way["railway"](39.7500,-84.1930,39.7660,-84.1730););out geom;' \
+  -o tools/osm-extract.json
+python3 tools/build_basemap.py tools/osm-extract.json docs/basemap.json
+```
+
+This is the only step that touches the network, and it runs on your machine, not the
+visitor's. The projection in `build_basemap.py` and the one in `map.js` must stay in
+step; change one and you change both.
+
+## Regenerating derivatives
+
+`docs/thumbs/` and `docs/view/` are generated from the originals with Pillow's WebP encoder
+(480px q72 and 1800px q80), which also strips EXIF metadata. Bump `BUILD` in `docs/index.html` whenever `data.json` or `basemap.json`
+changes, or browsers will serve the old data from cache.
+
+## Known gaps
+
+- **169 of the photos carry no year.** The source filenames simply don't have one; this is a limitation of the archive, not a parsing failure. They group under "Date unknown".
+- **The basemap is a snapshot.** It reflects OSM as of the build date and will not pick up later edits. Re-run the generator if that matters.
+- **No aerial or satellite imagery is possible offline.** A photographic basemap means tiles, and tiles mean an external service. The vector map is the trade for zero dependencies.
+- **"Full resolution" serves the 1800px derivative,** not the 3336px original. Originals are not committed; shipping them would add 845MB and push the repo near the Pages ceiling.
+- **Geocoding is unverified.** All 241 addresses have coordinates, but nobody has checked them against the real parcels. Worth a spot-check on a sample before this goes public.
+- **Span attachment is literal, not parity-aware.** See the range-labelled photos section; a handful of photos land on the address across the street.
+- **The n / s codes on 1973 photos are unexplained.** They appear on 218 address-photo links; OHDS may know what they mean (negative and slide is one guess). Captions omit them until confirmed.
+- **The Squarespace block is behind.** `squarespace/ohd-archive-block.html` predates the deep-link and history changes. Those write to the URL, which inside a Squarespace page is the host site's URL, so check that before regenerating it.
+- **0 of 241 descriptions and no provenance text yet.** The slots exist (`description` in `data.json`, `PROVENANCE` in `index.html`); the words need to come from OHDS.
+- **The site navigation is a copy.** It won't follow changes to the Squarespace menu on its own.
+- **No usage data.** GitHub Pages provides no visitor stats and the page loads no analytics by design.
+- **The originals are not in this repo.** The masters and the untouched source drop are kept separately; they need an off-site backup.
+
+## Changelog
+
+- Rebuilt the prototype: restyled to match oregonhistoric.org (Young Serif / Bitter / #ffc700), added year filtering, year comparison, the streetscapes gallery, deep links, and a mobile layout; generated webp derivatives so the browser no longer loads 3336px originals; repaired 7 streetscape records whose filenames didn't match what was on disk.
+- Removed every third-party runtime dependency: replaced Leaflet with a self-written SVG map engine, OSM raster tiles with a static vector basemap generated once from an Overpass extract, and Google Fonts with self-hosted woff2. The widget now makes no network calls outside its own folder.
+- Moved maintainer notes and machine-specific paths and config out of the public repo (scope change).
+- Resolved the rotation QA item: the eight flagged photos were reviewed and are correctly oriented (new data).
+- Hardened the embed snippet against Squarespace Embed blocks and documented the Code-block fix (correction).
+- Moved the site to discover.oregonhistoric.org and pointed the embed snippet at it (scope change).
+- Ran with the standalone subdomain: added the site navigation, forgiving search with a useful empty state, featured buildings, share-a-photo links, cleaned captions, grouped year chips, a phone-first year control, pin highlight on tile hover, labelled timelines, viewer focus handling, reduced-motion support, alt text, favicon and share preview (scope change).
+- UX audit fixes: map re-frames on search and year filters, amber ring for multi-year addresses, nearest-dot tapping with 44px touch targets, unique-photo counts (822) everywhere, undated stop on the timeline, full-state deep links with Back closing the viewer, keyboard-operable viewer thumbnails, About note and provenance slot, share-form address prefill hook, "Open image" in place of "Full resolution", visible title on phones, escaped descriptions, no close on stray clicks (scope change).

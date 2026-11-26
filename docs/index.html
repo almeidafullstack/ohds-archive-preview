@@ -1,0 +1,2091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow"><!-- review preview only -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Archive · Oregon Historic District</title>
+<meta name="description" content="Browse 822 photos of Dayton's Oregon Historic District, 1973 to 2003, by address, street, and year.">
+<link rel="icon" href="./img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
+<meta name="theme-color" content="#f4f4f3">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Oregon Historic District">
+<meta property="og:title" content="Oregon Historic District Photo Archive">
+<meta property="og:description" content="822 photos of Dayton's Oregon Historic District, 1973 to 2003. Find a building and compare the decades.">
+<meta property="og:url" content="https://discover.oregonhistoric.org/">
+<meta property="og:image" content="https://discover.oregonhistoric.org/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- No external resources. Fonts, map, and data are all served from this folder. -->
+<link rel="stylesheet" href="./fonts.css">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #e0e0e0;
+    --surface:  #f4f4f3;
+    --panel:    #ffffff;
+    --ink:      #383838;
+    --ink-soft: #6b6b6b;
+    --line:     #d2d2d0;
+    --accent:   #ffc700;
+    --accent-d: #d9a800;
+    /* Amber dark enough to carry text and focus rings on every light surface
+       (4.7:1 or better against --bg, --surface, --panel and the map). */
+    --accent-t: #7a5d00;
+    --dark:     #1c1c1c;
+    --radius:   4px;
+    --pill:     999px;
+    --serif:    'Young Serif', Georgia, serif;
+    --sans:     'Bitter', Georgia, serif;
+    --shadow:   0 1px 3px rgba(0,0,0,.10), 0 6px 20px rgba(0,0,0,.06);
+    --sidebar-w: 400px;
+
+    /* Basemap palette */
+    --map-bg:    #eceae4;
+    --map-block: #f7f6f2;
+    --map-bldg:  #d5d1c7;
+    --map-water: #bfd4dd;
+    --map-green: #d8e3cf;
+    --map-road:  #ffffff;
+    --map-case:  #cdcac2;
+    --map-rail:  #b4b1aa;
+  }
+
+  /* Sized for older eyes: 18px base, nothing on the page below ~14px, and
+     controls at least 40px tall so they are easy to hit. */
+  html { font-size: 18px; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--sans);
+    font-size: 1rem;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+  :focus-visible { outline: 2px solid var(--accent-t); outline-offset: 2px; }
+  /* The photo viewer is dark, where the bright amber is the legible one. */
+  #lightbox :focus-visible { outline-color: var(--accent); }
+
+  /* ── Site navigation (mirrors oregonhistoric.org) ── */
+  .site-nav {
+    flex-shrink: 0; position: relative; z-index: 3000;
+    height: 64px; padding: 0 18px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .site-logo { display: block; flex-shrink: 1; min-width: 0; }
+  .site-logo img { display: block; height: 42px; width: auto; max-width: 100%; }
+  .nav-menu { list-style: none; display: flex; align-items: center; gap: 4px; }
+  .nav-menu > li { position: relative; }
+  .nav-menu a, .nav-sub-btn {
+    display: block; padding: 10px 13px; font-family: var(--sans); font-size: .95rem;
+    color: var(--ink); text-decoration: none; border-radius: var(--radius); white-space: nowrap;
+  }
+  .nav-menu a:hover, .nav-sub-btn:hover { background: rgba(0,0,0,.05); }
+  .nav-menu a.current { box-shadow: inset 0 -2px 0 var(--accent); border-radius: 0; }
+  .nav-sub-btn::after { content: ' ▾'; font-size: .7em; color: var(--ink-soft); }
+  .nav-sub {
+    list-style: none; display: none; position: absolute; top: calc(100% + 4px); left: 0;
+    min-width: 180px; padding: 6px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .has-sub.open .nav-sub { display: block; }
+  .nav-toggle { display: none; padding: 7px 12px; font-size: .9rem; border: 1px solid var(--line); border-radius: var(--pill); background: var(--panel); }
+
+  /* ── Toolbar ──────────────────────────────────────── */
+  .toolbar {
+    flex-shrink: 0;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toolbar-row { display: flex; gap: 9px; align-items: center; }
+
+  .brandline {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+    margin-right: 2px;
+  }
+  h1.brandline { font-weight: 400; }
+  .brandline span { color: var(--ink-soft); font-family: var(--sans); font-size: 0.85rem; font-weight: 400; letter-spacing: .02em; display: block; margin-top: 1px; }
+
+  .search-box { position: relative; flex: 1; min-width: 120px; }
+  #search-input {
+    width: 100%;
+    padding: 11px 44px 11px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--pill);
+    font-size: 0.92rem;
+    font-family: var(--sans);
+    background: var(--surface);
+    outline: none;
+    color: var(--ink);
+  }
+  #search-input:focus { border-color: var(--ink); background: #fff; }
+  #search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    font-size: 1.4rem; line-height: 1; color: var(--ink-soft); padding: 6px 10px; display: none;
+  }
+  #search-input:not(:placeholder-shown) ~ #search-clear { display: block; }
+
+  /* The chips scroll; the label and the mode toggle stay pinned either side. */
+  .year-row { display: flex; gap: 8px; align-items: center; min-width: 0; }
+  .chiprow { display: flex; gap: 5px; align-items: center; overflow-x: auto; scrollbar-width: thin; padding-bottom: 1px; flex: 1; min-width: 0;
+    /* Fade the right edge so a clipped row reads as scrollable. */
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+            mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    padding-right: 24px; }
+  .chiprow::-webkit-scrollbar { height: 4px; }
+  .chiprow::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .chip-label {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--ink-soft); font-weight: 600; white-space: nowrap; padding-right: 3px;
+  }
+  .chip {
+    font-size: 0.92rem; padding: 9px 16px; border-radius: var(--pill);
+    border: 1px solid var(--line); background: var(--surface);
+    white-space: nowrap; transition: background .12s, border-color .12s, transform .12s; font-weight: 500;
+  }
+  .chip:hover { border-color: var(--ink-soft); }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: var(--dark); font-weight: 600; }
+
+  /* Two-option switch between year buttons and the timeline. The pressed half is
+     the view on screen, so the labels never read backwards. */
+  .year-mode {
+    flex-shrink: 0; display: inline-flex;
+    border: 1px solid var(--line); border-radius: var(--pill);
+    background: var(--surface); padding: 3px;
+  }
+  .year-mode button {
+    font-size: 0.92rem; padding: 7px 14px; border-radius: var(--pill);
+    white-space: nowrap; color: var(--ink-soft);
+  }
+  .year-mode button:hover { color: var(--ink); }
+  .year-mode button[aria-pressed="true"] { background: var(--dark); color: #fff; font-weight: 600; }
+
+  /* Says what is being shown whenever a filter is on, with one obvious way out. */
+  .filter-bar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #fff6d6; border: 1px solid var(--accent-d); border-radius: var(--radius);
+    padding: 8px 8px 8px 16px; font-size: 1rem;
+  }
+  .filter-bar[hidden] { display: none; }
+  .filter-bar-text { flex: 1; min-width: 0; }
+  .filter-bar-text b { font-weight: 700; }
+  .btn-clear {
+    flex-shrink: 0; font-size: 1rem; font-weight: 700; color: var(--dark);
+    background: var(--accent); border: 2px solid var(--dark); border-radius: var(--pill);
+    padding: 10px 20px; white-space: nowrap;
+  }
+  .btn-clear:hover { background: var(--accent-d); }
+
+  /* ── Timeline ─────────────────────────────────────── */
+  .timeline { display: none; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  body.timeline-mode #year-chips { display: none; }
+  body.timeline-mode #timeline-main { display: flex; }
+  #timeline-lb { display: flex; }
+
+  .tl-track {
+    position: relative; flex: 1; height: 48px; cursor: pointer;
+    touch-action: none; min-width: 120px; margin: 0 14px;
+  }
+  .tl-rail {
+    position: absolute; left: 0; right: 0; top: 16px; height: 4px;
+    background: var(--line); border-radius: 2px;
+  }
+  .tl-fill {
+    position: absolute; left: 0; top: 16px; height: 4px;
+    background: var(--accent); border-radius: 2px;
+  }
+  .tl-tick {
+    position: absolute; top: 11px; width: 2px; height: 14px;
+    background: #c3bfb6; transform: translateX(-1px); border-radius: 1px;
+  }
+  .tl-tick.has { background: var(--ink-soft); }
+  .tl-tick.tl-minor { height: 6px; top: 15px; background: #d9d6cf; }
+  .lb-timeline .tl-tick.tl-minor { background: #3a3a3a; }
+  .tl-tick.dim { opacity: .3; }
+  .tl-ticklabel {
+    position: absolute; top: 28px; transform: translateX(-50%);
+    font-size: 0.8rem; color: var(--ink-soft); white-space: nowrap; pointer-events: none;
+  }
+  .tl-ticklabel.first { transform: none; }
+  .tl-ticklabel.narrow { display: none; }
+  .tl-ticklabel.last { transform: translateX(-100%); }
+  .lb-timeline .tl-ticklabel { color: #9a9a9a; }
+  .tl-handle {
+    position: absolute; top: 5px; width: 26px; height: 26px;
+    background: var(--panel); border: 3px solid var(--dark); border-radius: 50%;
+    transform: translateX(-13px); box-shadow: var(--shadow); pointer-events: none;
+  }
+  .tl-label {
+    font-size: 1rem; font-weight: 600; min-width: 92px; text-align: right;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .tl-count { font-size: 0.8rem; color: var(--ink-soft); min-width: 80px; flex-shrink: 0; }
+
+
+  /* ── Layout ───────────────────────────────────────── */
+  .layout { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+  #sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sidebar-meta {
+    padding: 8px 14px; font-size: 0.85rem; color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+  }
+  .sidebar-meta-right { display: flex; align-items: center; gap: 12px; }
+  #list-close { display: none; }
+  .linkbtn { font-size: 0.85rem; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+  .linkbtn:hover { color: var(--accent-t); }
+
+  #addr-list { overflow-y: auto; flex: 1; overscroll-behavior: contain; }
+  #addr-list::-webkit-scrollbar { width: 8px; }
+  #addr-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+
+  /* Street heading doubles as the collapse control; groups start closed so the
+     whole district is scannable in one screen. */
+  .street-group { border-bottom: 1px solid var(--line); }
+  .street-head {
+    position: sticky; top: 0; z-index: 2;
+    width: 100%; padding: 14px 16px;
+    background: var(--panel);
+    border: none; text-align: left; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    transition: background .12s;
+  }
+  .street-head:hover { background: var(--surface); }
+  .street-head-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .street-chevron {
+    font-size: 0.8rem; color: var(--ink-soft); flex-shrink: 0;
+    transition: transform .16s;
+  }
+  .street-group.collapsed .street-chevron { transform: rotate(-90deg); }
+  .street-group.collapsed .tile-grid { display: none; }
+  .street-name { font-family: var(--serif); font-size: .95rem; }
+  .street-photo-count { font-size: 0.8rem; color: var(--ink-soft); white-space: nowrap; }
+  .street-group.scenes .street-name::before { content: '◈ '; color: var(--accent-t); }
+
+  .tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: 10px;
+    padding: 0 12px 16px;
+  }
+  .tile {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    display: flex; flex-direction: column;
+    transition: border-color .12s, box-shadow .12s, transform .12s;
+  }
+  .tile:hover { border-color: var(--ink-soft); box-shadow: var(--shadow); transform: translateY(-1px); }
+  .tile.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+  .tile-img {
+    width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .tile-img.none {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-soft); font-size: 0.85rem;
+  }
+  .tile-body { padding: 8px 10px 9px; display: flex; flex-direction: column; gap: 1px; }
+  .tile-addr { font-size: 1rem; font-weight: 600; line-height: 1.2; }
+  .tile-meta { font-size: 0.8rem; color: var(--ink-soft); }
+  /* display:contents lets the cluster's head and its member tiles sit directly in
+     the parent grid, so nothing has to re-flow when one expands. */
+  .cluster { display: contents; }
+  .cluster.collapsed .tile.member { display: none; }
+
+  .cluster-head { position: relative; }
+  /* Collapsed, it reads as a stack of cards to signal there is more underneath. */
+  .cluster.collapsed .cluster-head { box-shadow: 3px 3px 0 -1px var(--panel), 4px 4px 0 0 var(--line); }
+  .cluster.collapsed .cluster-head:hover { box-shadow: 3px 3px 0 -1px var(--panel), 4px 4px 0 0 var(--ink-soft), var(--shadow); }
+
+  .cluster-cta {
+    display: block; margin-top: 3px;
+    font-size: 0.8rem; font-weight: 600; color: var(--accent-t);
+  }
+  /* Expanded, the head steps out of the way: a full-width bar above its members. */
+  .cluster:not(.collapsed) .cluster-head {
+    grid-column: 1 / -1;
+    flex-direction: row; align-items: center; gap: 8px;
+    background: var(--surface); border-style: dashed;
+  }
+  .cluster:not(.collapsed) .cluster-head .tile-img,
+  .cluster:not(.collapsed) .cluster-head .tile-span { display: none; }
+  .cluster:not(.collapsed) .cluster-head .tile-body { flex-direction: row; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .cluster:not(.collapsed) .cluster-head .cluster-cta { margin-top: 0; margin-left: auto; }
+
+  /* Marks a cover that is one wide shot shared by several addresses, so the
+     repeated thumbnail reads as deliberate rather than broken. */
+  .tile-span {
+    position: absolute; top: 5px; left: 5px;
+    background: rgba(28,28,28,.72); color: #f3e6bd;
+    font-size: 0.8rem; font-weight: 600; letter-spacing: .02em;
+    border-radius: var(--pill); padding: 1px 6px;
+  }
+  .tile-count {
+    position: absolute; top: 5px; right: 5px;
+    background: rgba(28,28,28,.82); color: #fff;
+    font-size: 0.8rem; font-weight: 600;
+    border-radius: var(--pill); padding: 1px 7px;
+  }
+  .tile.active .tile-count { background: var(--accent); color: var(--dark); }
+
+  .empty-note { padding: 24px 16px 14px; text-align: center; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.6; }
+  .empty-note strong { display: block; color: var(--ink); font-family: var(--serif); font-weight: 400; font-size: 1rem; margin-bottom: 4px; }
+  .empty-sub { padding: 4px 14px 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); font-weight: 600; }
+  .share-note { margin: 14px 12px 18px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: var(--radius); font-size: 0.85rem; line-height: 1.5; color: var(--ink-soft); }
+  .share-note a, .share-link { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--accent-d); }
+  .share-note a:hover, .share-link:hover { color: var(--accent-t); }
+
+  /* ── SVG map ──────────────────────────────────────── */
+  #map { flex: 1; position: relative; overflow: hidden; background: var(--map-bg); }
+  .svgmap { touch-action: none; }
+  .svgmap-canvas { display: block; cursor: grab; background: var(--map-bg); }
+  .svgmap-canvas:active { cursor: grabbing; }
+
+  .lyr path { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .lyr-green  .body { fill: var(--map-green); stroke: none; }
+  .lyr-water  .body { fill: var(--map-water); stroke: none; }
+  .lyr-building .body { fill: var(--map-bldg); stroke: #c6c1b5; stroke-width: .6; }
+  .lyr-rail .casing { stroke: var(--map-rail); stroke-width: 2.4; }
+  .lyr-rail .body   { stroke: #fff; stroke-width: 1.1; stroke-dasharray: 5 5; }
+  .lyr-path .casing { stroke: none; }
+  .lyr-path .body   { stroke: #cfccc4; stroke-width: 1; stroke-dasharray: 3 3; }
+  .lyr-road-service .casing { stroke: var(--map-case); stroke-width: 3; }
+  .lyr-road-service .body   { stroke: var(--map-road); stroke-width: 2; }
+  .lyr-road-minor .casing   { stroke: var(--map-case); stroke-width: 6; }
+  .lyr-road-minor .body     { stroke: var(--map-road); stroke-width: 4.5; }
+  .lyr-road-arterial .casing{ stroke: #c3bfb6; stroke-width: 8; }
+  .lyr-road-arterial .body  { stroke: #fffdf6; stroke-width: 6.5; }
+  .lyr-road-major .casing   { stroke: #c8b98f; stroke-width: 9.5; }
+  .lyr-road-major .body     { stroke: #fdf3d6; stroke-width: 8; }
+
+  .svgmap-label {
+    font-family: var(--sans); font-weight: 500;
+    fill: #5f5b52; paint-order: stroke; stroke: var(--map-bg); stroke-width: calc(3px / var(--k));
+    text-anchor: middle; dominant-baseline: middle; pointer-events: none;
+    font-size: calc(10px / var(--k));
+  }
+  .svgmap-label.r1 { fill: #48443a; font-weight: 600; font-size: calc(11px / var(--k)); }
+
+  .district-boundary {
+    fill: #1c1c1c; fill-opacity: .035;
+    stroke: #1c1c1c; stroke-opacity: .5; stroke-width: 1.5;
+    stroke-dasharray: 6 5; vector-effect: non-scaling-stroke; pointer-events: none;
+  }
+
+  /* Invisible, larger circle under each pin: the actual tap/click target. */
+  .svgmap-hit { fill: transparent; stroke: none; cursor: pointer; }
+  .svgmap-pin {
+    pointer-events: none;            /* the hit circle handles it */
+    fill: var(--dark); stroke: #fff; stroke-width: 1.5;
+    vector-effect: non-scaling-stroke; cursor: pointer;
+  }
+  .svgmap-pin-g:hover .svgmap-pin, .svgmap-pin.hover { fill: var(--accent); }
+  .svgmap-pin.hover:not(.active) { stroke: var(--dark); stroke-width: 2; }
+  .svgmap-pin.active { fill: var(--accent); stroke: var(--dark); stroke-width: 2; }
+  /* Photographed in more than one year: an amber ring marks the then-and-now pairs. */
+  .svgmap-pin.multi:not(.active):not(.hover) { stroke: var(--accent); stroke-width: 2.5; }
+  .svgmap-legend .legend-multi { display: inline-flex; align-items: center; gap: 5px; margin-left: 6px; padding-left: 9px; border-left: 1px solid var(--line); }
+  .svgmap-legend .legend-multi circle { stroke: var(--accent); stroke-width: 2.5; }
+
+  .svgmap-popup {
+    position: absolute; z-index: 500;
+    transform: translate(-50%, calc(-100% - 12px));
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    width: 320px; overflow: hidden;
+  }
+  .svgmap-popup::after {
+    content: ''; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%) rotate(45deg);
+    width: 10px; height: 10px; background: var(--panel);
+    border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  }
+  /* Sits over the photo, so it carries its own background to stay visible. */
+  .popup-close {
+    position: absolute; top: 8px; right: 8px; z-index: 1;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.95); color: var(--dark); border: 1px solid var(--line);
+    font-size: 1.1rem; font-weight: 700; line-height: 1; box-shadow: var(--shadow);
+  }
+  .popup-close:hover { background: var(--accent); border-color: var(--dark); }
+  .popup-thumb { width: 100%; height: 170px; object-fit: cover; display: block; cursor: pointer; background: var(--surface); }
+  .popup-body { padding: 9px 11px 11px; }
+  .popup-body h3 { font-family: var(--serif); font-size: 1.15rem; font-weight: 400; margin-bottom: 2px; padding-right: 36px; }
+  .popup-meta { font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 8px; }
+  .popup-desc {
+    font-size: 0.85rem; line-height: 1.45; color: var(--ink);
+    margin-bottom: 9px; padding-left: 8px; border-left: 2px solid var(--accent);
+  }
+
+  /* Gallery strip inside the popup */
+  .popup-gallery {
+    display: flex; gap: 5px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 9px;
+    scrollbar-width: thin;
+  }
+  .popup-gallery::-webkit-scrollbar { height: 5px; }
+  .popup-gallery::-webkit-scrollbar-thumb { background: var(--line); border-radius: 5px; }
+  .popup-gallery::-webkit-scrollbar-track { background: transparent; }
+  .popup-gthumb {
+    position: relative; flex: 0 0 auto; width: 72px; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 3px; overflow: hidden; background: var(--surface);
+    padding: 0; display: block;
+  }
+  .popup-gthumb img { width: 100%; height: 52px; object-fit: cover; display: block; }
+  .popup-gthumb span {
+    display: block; font-size: 0.8rem; color: var(--ink-soft);
+    text-align: center; padding: 1px 0 2px; letter-spacing: .02em;
+  }
+  .popup-gthumb:hover { border-color: var(--accent-d); }
+  .popup-gthumb.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .popup-btn { display: block; width: 100%; padding: 12px; background: var(--accent); color: var(--dark); border-radius: var(--pill); font-size: 0.85rem; font-weight: 600; text-align: center; }
+  .popup-btn:hover { background: var(--accent-d); }
+
+  /* Hover card: a quick look at a dot before clicking it. */
+  .pin-hover {
+    position: absolute; z-index: 450; pointer-events: none;
+    width: 240px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+    transform: translate(-50%, calc(-100% - 14px));
+  }
+  .pin-hover[hidden] { display: none; }
+  .pin-hover.below { transform: translate(-50%, 14px); }
+  .pin-hover img { display: block; width: 100%; height: 150px; object-fit: cover; background: var(--surface); }
+  .pin-hover-body { padding: 8px 12px 10px; }
+  .pin-hover-body b { display: block; font-family: var(--serif); font-weight: 400; font-size: 1.1rem; }
+  .pin-hover-body span { font-size: .85rem; color: var(--ink-soft); }
+  .pin-hover-body em { display: block; font-style: normal; font-size: .8rem; color: var(--accent-t); font-weight: 600; margin-top: 3px; }
+
+  .svgmap-zoom {
+    position: absolute; top: 12px; left: 12px; z-index: 400;
+    display: flex; flex-direction: column; border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--line); box-shadow: var(--shadow);
+  }
+  .svgmap-zoom button {
+    width: 44px; height: 44px; background: var(--panel); font-size: 1.5rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .svgmap-zoom button:hover { background: var(--surface); }
+  .svgmap-zoom button + button { border-top: 1px solid var(--line); }
+
+  .svgmap-legend {
+    position: absolute; top: 12px; left: 68px; z-index: 400;
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,.88); border: 1px solid var(--line);
+    border-radius: var(--pill); padding: 4px 11px 4px 8px;
+    font-size: 0.8rem; color: var(--ink-soft); white-space: nowrap;
+  }
+  .svgmap-legend svg { display: block; }
+  .svgmap-legend circle { fill: var(--dark); stroke: #fff; stroke-width: 1.5; }
+
+  .svgmap-attrib {
+    position: absolute; bottom: 0; right: 0; z-index: 400;
+    background: rgba(255,255,255,.82); color: var(--ink-soft);
+    font-size: 0.8rem; padding: 2px 7px; border-top-left-radius: var(--radius);
+  }
+
+  .map-fab {
+    position: absolute; z-index: 600;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--pill); padding: 11px 18px;
+    font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow);
+  }
+  .map-fab:hover { background: var(--surface); }
+  #reset-view { bottom: 26px; right: 14px; }
+  #mobile-list-toggle { display: none; bottom: 26px; left: 14px; }
+
+  /* First-visit prompt over the map */
+  .featured {
+    position: absolute; z-index: 650; left: calc(var(--sidebar-w) + 14px); bottom: 26px; width: 380px; max-width: calc(100% - var(--sidebar-w) - 28px);
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 12px 14px 12px;
+  }
+  .featured[hidden] { display: none; }
+  .featured h2 { font-family: var(--serif); font-weight: 400; font-size: 1rem; margin: 0 22px 3px 0; }
+  .featured p { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.45; margin-bottom: 9px; }
+  .featured-close { position: absolute; top: 4px; right: 6px; font-size: 1.6rem; line-height: 1; color: var(--ink-soft); padding: 6px 10px; }
+  .featured-list { display: flex; gap: 7px; }
+  .featured-item {
+    flex: 1 1 0; min-width: 0; text-align: left; padding: 0;
+    border: 1px solid var(--line); border-radius: 3px; overflow: hidden; background: var(--surface);
+  }
+  .featured-item:hover { border-color: var(--accent-d); }
+  .featured-item img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .featured-item span { display: block; padding: 4px 6px 5px; font-size: 0.8rem; line-height: 1.25; }
+  .featured-item b { display: block; font-weight: 600; font-size: 0.85rem; }
+
+  /* About this archive */
+  .about-note { margin: 14px 12px 4px; font-size: 0.85rem; line-height: 1.55; color: var(--ink-soft); }
+  .about-note summary { cursor: pointer; color: var(--ink); font-weight: 600; padding: 6px 0; }
+  .about-note p { margin-top: 6px; }
+
+  /* ── Lightbox ─────────────────────────────────────── */
+  #lightbox { display: none; position: fixed; inset: 0; z-index: 4000; background: #141414; flex-direction: column; }
+  #lightbox.open { display: flex; }
+  .lb-header {
+    padding: 14px 120px 12px 20px; color: #fff; flex-shrink: 0;
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  .lb-header h2 { font-family: var(--serif); font-size: 1.4rem; font-weight: 400; }
+  .lb-header p { font-size: 0.85rem; color: #a8a8a8; }
+  .lb-desc {
+    flex-basis: 100%; font-size: 0.85rem; line-height: 1.5; color: #d8d8d8;
+    padding-left: 9px; border-left: 2px solid var(--accent); margin-top: 7px; max-width: 70ch;
+  }
+  .lb-timeline {
+    flex-shrink: 0; padding: 7px 20px 9px;
+    border-top: 1px solid rgba(255,255,255,.1);
+    background: rgba(0,0,0,.25);
+  }
+  .lb-timeline .timeline { display: flex; }
+  .lb-timeline .tl-rail { background: #4a4a4a; }
+  .lb-timeline .tl-tick { background: #6d6d6d; }
+  .lb-timeline .tl-tick.has { background: #b9b9b9; }
+  .lb-timeline .tl-handle { background: #1c1c1c; border-color: var(--accent); }
+  .lb-timeline .tl-label { color: #f0f0f0; }
+  .lb-timeline .tl-count { color: #9a9a9a; }
+  #lb-close {
+    position: absolute; top: 10px; right: 14px; z-index: 10;
+    font-size: 1rem; font-weight: 600; line-height: 1; color: #fff;
+    padding: 10px 16px; border: 1px solid rgba(255,255,255,.4); border-radius: var(--pill);
+  }
+  #lb-close:hover { background: rgba(255,255,255,.14); }
+
+  .lb-stage { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 12px; min-height: 0; }
+  #lb-img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 6px 34px rgba(0,0,0,.6); }
+  .lb-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 1.7rem; color: #fff; background: rgba(0,0,0,.45); border-radius: 50%;
+    width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; transition: background .12s;
+  }
+  .lb-nav:hover { background: var(--accent); color: var(--dark); }
+  #lb-prev { left: 14px; } #lb-next { right: 14px; }
+
+  .main-pane { display: contents; }
+  #main-tag { display: none; }
+  .lb-stage.compare { gap: 10px; padding: 12px; }
+  .lb-stage.compare .main-pane {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: 1 1 0; min-width: 0; min-height: 0; height: 100%; gap: 6px;
+  }
+  .lb-stage.compare .main-pane #lb-img { min-height: 0; flex: 0 1 auto; max-width: 100%; max-height: none; }
+  .lb-stage.compare #main-tag { display: block; }
+  .cmp-pane { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0; min-height: 0; height: 100%; gap: 6px; }
+  .lb-stage.compare .cmp-pane { display: flex; }
+  .cmp-pane img { min-height: 0; flex: 0 1 auto; max-width: 100%; object-fit: contain; box-shadow: 0 6px 34px rgba(0,0,0,.6); }
+  .cmp-tag { font-size: 0.85rem; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+
+  .lb-footer {
+    flex-shrink: 0; padding: 9px 20px; color: #c4c4c4; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .lb-caption { flex: 1; min-width: 140px; color: #e4e4e4; }
+  .lb-action { font-size: 0.92rem; padding: 9px 16px; border-radius: var(--pill); border: 1px solid rgba(255,255,255,.28); color: #fff; white-space: nowrap; text-decoration: none; }
+  .lb-action:hover { background: rgba(255,255,255,.14); }
+  .lb-action.on { background: var(--accent); color: var(--dark); border-color: var(--dark); font-weight: 700; }
+  .lb-compare-note { color: var(--accent); font-weight: 600; }
+  .lb-compare-note[hidden] { display: none; }
+  .lb-timeline .timeline { flex-wrap: nowrap; }
+  .lb-timeline .btn-clear { padding: 7px 14px; font-size: .92rem; }
+  .lb-timeline .btn-clear[hidden] { display: none; }
+  .lb-footer .share-link { color: #fff; font-size: 0.85rem; font-weight: 500; white-space: nowrap; }
+
+  .lb-thumbs { flex-shrink: 0; display: flex; gap: 7px; padding: 9px 14px; overflow-x: auto; background: rgba(0,0,0,.4); }
+  .lb-thumbs::-webkit-scrollbar { height: 6px; }
+  .lb-thumbs::-webkit-scrollbar-thumb { background: #555; border-radius: 6px; }
+  .lb-thumb {
+    height: 72px; width: 100px; flex-shrink: 0; padding: 0; overflow: hidden;
+    border: 2px solid transparent; border-radius: 3px; cursor: pointer;
+    opacity: .5; transition: opacity .12s; background: #333;
+  }
+  .lb-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .lb-thumb:hover, .lb-thumb:focus-visible { opacity: .85; }
+  .lb-thumb.active { border-color: var(--accent); opacity: 1; }
+  .lb-thumb.cmp-pick { border-color: #6ec1ff; opacity: 1; }
+
+
+  /* ── Press feedback ───────────────────────────────── */
+  /* Every control answers a press within a frame. Colour carries the cue for
+     everyone; the small scale is added only when motion is welcome. */
+  .year-mode button, .btn-clear, .popup-btn, .lb-action, .lb-nav, .nav-toggle,
+  .svgmap-zoom button, .map-fab, .featured-item, .featured-close, #search-clear {
+    transition-property: background-color, color, border-color, transform;
+    transition-duration: .12s; transition-timing-function: ease-out;
+  }
+  .nav-menu a:active, .nav-sub-btn:active { background: rgba(0,0,0,.1); }
+  .chip:active:not(.on) { background: var(--line); }
+  .year-mode button:active:not([aria-pressed="true"]) { background: var(--line); color: var(--ink); }
+  .year-mode button[aria-pressed="true"]:active { background: #3a3a3a; }
+  .btn-clear:active, .popup-btn:active { background: var(--accent-d); }
+  .linkbtn:active, .share-link:active, .share-note a:active { opacity: .7; }
+  .street-head:active { background: var(--line); }
+  .tile:active { border-color: var(--ink); box-shadow: none; }
+  .svgmap-zoom button:active, .map-fab:active, .nav-toggle:active { background: var(--line); }
+  .featured-item:active { border-color: var(--accent-t); }
+  .featured-close:active, #search-clear:active { color: var(--ink); }
+  .lb-action:active { background: rgba(255,255,255,.24); }
+  .lb-nav:active { background: var(--accent-d); color: var(--dark); }
+  @media (prefers-reduced-motion: no-preference) {
+    .chip:active, .year-mode button:active, .btn-clear:active, .popup-btn:active,
+    .lb-action:active, .nav-toggle:active, .svgmap-zoom button:active,
+    .map-fab:active, .featured-close:active { transform: scale(.96); }
+    .tile:active, .featured-item:active { transform: scale(.98); }
+    .lb-nav:active { transform: translateY(-50%) scale(.96); }
+  }
+
+  /* ── Mobile ───────────────────────────────────────── */
+  @media (max-width: 760px) {
+    .toolbar-row { flex-wrap: wrap; row-gap: 8px; }
+    .brandline { flex-basis: 100%; font-size: 1rem; }
+    .brandline span { display: none; }
+    .tl-ticklabel.wide { display: none; }
+    .tl-ticklabel.narrow { display: block; }
+    .site-nav { height: 48px; padding: 0 12px; }
+    .site-logo img { height: 28px; }
+    .nav-toggle { display: block; }
+    .nav-menu {
+      display: none; position: fixed; inset: 48px 0 0 0; z-index: 3000;
+      flex-direction: column; align-items: stretch; gap: 0; padding: 8px 12px 24px;
+      background: var(--panel); overflow-y: auto;
+    }
+    body.nav-open .nav-menu { display: flex; }
+    .nav-menu a, .nav-sub-btn { width: 100%; text-align: left; padding: 13px 8px; font-size: 1rem; border-bottom: 1px solid var(--line); border-radius: 0; }
+    .nav-menu a.current { box-shadow: inset 3px 0 0 var(--accent); }
+    .nav-sub { position: static; box-shadow: none; border: none; padding: 0 0 0 14px; }
+    .featured { bottom: 70px; left: 14px; right: 14px; width: auto; max-width: none; }
+    :root { --sidebar-w: 100%; }
+    #sidebar {
+      position: absolute; inset: 0; z-index: 1200;
+      border-right: none; transform: translateX(-100%); transition: transform .22s ease;
+    }
+    body.list-open #sidebar { transform: translateX(0); }
+    #list-close { display: block; }
+    #mobile-list-toggle { display: block; }
+    body.list-open #mobile-list-toggle { display: none; }
+    body.list-open .svgmap-zoom, body.list-open .svgmap-attrib,
+    body.list-open .svgmap-legend { display: none; }
+    .svgmap-legend { font-size: 0.8rem; padding: 3px 9px 3px 6px; gap: 5px; }
+    .lb-header { padding: 11px 110px 9px 14px; }
+    #lb-close { top: 8px; right: 8px; padding: 9px 12px; }
+    .filter-bar { font-size: .92rem; padding: 6px 6px 6px 12px; }
+    .lb-header h2 { font-size: 1rem; }
+    .lb-nav { width: 36px; height: 36px; font-size: 1.4rem; }
+    #lb-prev { left: 6px; } #lb-next { right: 6px; }
+    .lb-stage.compare { flex-direction: column; }
+    .lb-stage.compare .main-pane, .lb-stage.compare .cmp-pane { flex: 1 1 0; max-width: 100%; min-height: 0; }
+    .tile-grid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+    body.timeline-mode .year-row { flex-wrap: wrap; row-gap: 4px; }
+    body.timeline-mode #timeline-main { order: 3; flex-basis: 100%; }
+    #timeline-main .tl-count { display: none; }
+    #timeline-main .tl-label { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-nav">
+  <a class="site-logo" href="https://www.oregonhistoric.org/"><img src="./img/ohds-logo.webp" width="564" height="76" alt="Oregon Historic District, home"></a>
+  <nav aria-label="Oregon Historic District">
+    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+    <ul class="nav-menu" id="nav-menu">
+      <li><a href="./" class="current" aria-current="page">Photo Archive</a></li>
+      <li class="has-sub">
+        <button class="nav-sub-btn" aria-expanded="false">Get Involved</button>
+        <ul class="nav-sub">
+          <li><a href="https://www.oregonhistoric.org/membership">Membership</a></li>
+          <li><a href="https://www.oregonhistoric.org/donate">Donate</a></li>
+        </ul>
+      </li>
+      <li><a href="https://www.oregonhistoric.org/calendar">Calendar</a></li>
+      <li class="has-sub">
+        <button class="nav-sub-btn" aria-expanded="false">About</button>
+        <ul class="nav-sub">
+          <li><a href="https://www.oregonhistoric.org/about-ohds">About OHDS</a></li>
+          <li><a href="https://www.oregonhistoric.org/history">History</a></li>
+          <li><a href="https://www.oregonhistoric.org/newcom-park">Newcom Park</a></li>
+        </ul>
+      </li>
+      <li><a href="https://www.oregonhistoric.org/merch">Merch</a></li>
+      <li><a href="https://www.oregonhistoric.org/contact">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="toolbar">
+  <div class="toolbar-row">
+    <h1 class="brandline">Photo Archives<span>Oregon Historic District · Dayton, Ohio</span></h1>
+    <div class="search-box">
+      <input id="search-input" type="text" placeholder="Search an address or street…" autocomplete="off" aria-label="Search address or street">
+      <button id="search-clear" aria-label="Clear search">×</button>
+    </div>
+  </div>
+  <div class="year-row">
+    <span class="chip-label">Year</span>
+    <div class="chiprow" id="year-chips"></div>
+    <div class="timeline" id="timeline-main"></div>
+    <div class="year-mode" id="year-mode" role="group" aria-label="Choose years with">
+      <button type="button" data-mode="chips" aria-pressed="true">Year buttons</button>
+      <button type="button" data-mode="timeline" aria-pressed="false">Timeline</button>
+    </div>
+  </div>
+  <div class="filter-bar" id="filter-bar" role="status" hidden>
+    <span class="filter-bar-text" id="filter-bar-text"></span>
+    <button type="button" class="btn-clear" id="filter-clear">✕ Clear filter</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div id="sidebar">
+    <div class="sidebar-meta">
+      <span id="sidebar-count"></span>
+      <span class="sidebar-meta-right">
+        <button class="linkbtn" id="featured-open" type="button">Featured buildings</button>
+        <button class="linkbtn" id="list-close" aria-label="Close list">Close ✕</button>
+      </span>
+    </div>
+    <div id="addr-list"></div>
+  </div>
+  <div id="map" role="region" aria-label="Map of photographed addresses. The list holds the same addresses."></div>
+  <button class="map-fab" id="reset-view">Reset view</button>
+  <button class="map-fab" id="mobile-list-toggle">☰ List</button>
+  <section class="featured" id="featured" aria-labelledby="featured-title" hidden>
+    <button class="featured-close" id="featured-close" aria-label="Dismiss">×</button>
+    <h2 id="featured-title">See the district change</h2>
+    <p>Click any dot to see that building through the decades. Or start with one of these:</p>
+    <div class="featured-list" id="featured-list"></div>
+  </section>
+</div>
+
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button id="lb-close" aria-label="Close photo viewer">✕ Close</button>
+  <div class="lb-header">
+    <h2 id="lb-title"></h2>
+    <p id="lb-subtitle"></p>
+    <p class="lb-desc" id="lb-desc" hidden></p>
+  </div>
+  <div class="lb-stage" id="lb-stage">
+    <button class="lb-nav" id="lb-prev" aria-label="Previous photo">‹</button>
+    <div class="main-pane" id="main-pane">
+      <img id="lb-img" src="" alt="">
+      <div class="cmp-tag" id="main-tag"></div>
+    </div>
+    <div class="cmp-pane" id="cmp-pane">
+      <img id="cmp-img" src="" alt="">
+      <div class="cmp-tag" id="cmp-tag"></div>
+    </div>
+    <button class="lb-nav" id="lb-next" aria-label="Next photo">›</button>
+  </div>
+  <div class="lb-footer">
+    <span class="lb-caption" id="lb-caption"></span>
+    <span class="lb-compare-note" id="lb-compare-note" hidden></span>
+    <span id="lb-counter"></span>
+    <button class="lb-action" id="lb-compare">Compare years</button>
+    <a class="lb-action" id="lb-full" target="_blank" rel="noopener">Open image ↗</a>
+    <a class="share-link" id="lb-share" target="_blank" rel="noopener">Know this building? Share a photo</a>
+  </div>
+  <div class="lb-thumbs" id="lb-thumbs"></div>
+  <div class="lb-timeline"><div class="timeline" id="timeline-lb"></div></div>
+
+</div>
+
+<script src="./map.js"></script>
+<script>
+// ── Config ───────────────────────────────────────────────────────────────────
+const BUILD = '2026-11-18a';   // bump when data.json or basemap.json changes
+const THUMB_URL = './thumbs/';
+const VIEW_URL  = './view/';
+const FULL_URL  = './view/';   // originals stay offline; see README
+const SHARE_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSch44UL_60T4-3VaywmjA7WQUN4gPKC16ai3Lg-0J6Ta-3miQ/viewform';
+// Entry ID of the form's "Address or location" question (the number after
+// "entry." in the form's prefilled-link template). Set it and every Share link
+// arrives with the building's address already filled in. Empty means no prefill.
+const SHARE_FIELD = '';
+// Who made the photographs and why, in OHDS's words. Shown in the "About this
+// archive" note under the address list; empty renders nothing.
+const PROVENANCE = '';
+const UNDATED = 'Date unknown';
+const THIN_YEAR = 10;          // years with fewer photos than this fold into the chip before them
+
+// Buildings offered on first visit: each opens straight into compare mode on
+// the two named photos.
+const FEATURED = [
+  { address: '5 Cass St',   from: 'Cass St/5 Cass St - 1973 - 1.jpg',   to: 'Cass St/5 Cass St - 2003.jpg' },
+  { address: '22 Brown St', from: 'Brown St/22 Brown St - 1973 - 1.jpg', to: 'Brown St/22 Brown St - 1998.jpg' },
+  { address: '11 Cass St',  from: 'Cass St/11 Cass St - 1973 - n.jpg',  to: 'Cass St/11 Cass St - 2003.jpg' },
+];
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} },
+};
+
+// The "Share a photo" form, run by an OHDS volunteer. It opens in a new tab; this
+// page sends nothing itself. `place` is kept for when the form gains a prefilled
+// address field.
+function shareHref(place) {
+  if (!SHARE_FIELD || !place) return SHARE_FORM;
+  return `${SHARE_FORM}?usp=pp_url&entry.${SHARE_FIELD}=${encodeURIComponent(place)}`;
+}
+const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const captionOf = p => p.caption || (p.original || '').replace(/\.jpe?g$/i, '');
+
+const DISTRICT_BOUNDARY = [
+  [39.7567803, -84.1877067], [39.7552889, -84.1880046], [39.7544779, -84.1884901],
+  [39.7526828, -84.1879968], [39.7530334, -84.1847218], [39.7533345, -84.1814362],
+  [39.7542334, -84.1761951], [39.7558479, -84.1767363], [39.7575119, -84.1771918],
+  [39.7631203, -84.1787841], [39.7567803, -84.1877067]
+];
+
+// ── Path helpers ─────────────────────────────────────────────────────────────
+const relPath  = p => p.clean_file || p.file;
+const webpPath = p => relPath(p).replace(/\.jpe?g$/i, '.webp');
+const thumbSrc = p => THUMB_URL + encodeURI(webpPath(p));
+const viewSrc  = p => VIEW_URL  + encodeURI(webpPath(p));
+const fullSrc  = p => FULL_URL  + encodeURI(webpPath(p));
+
+// A photo captioned "429-443 E. Sixth St" covers a whole row of buildings, so it
+// gets attached to every address in that span. That makes it a poor tile cover:
+// filter to 1974 and ten tiles front the same wide shot. Prefer the narrowest span
+// available, and fall back to the wide one only when it is genuinely all there is.
+const SPAN_RE = /^\s*(\d+)\s*-\s*(\d+)\s/;
+function photoSpan(p) {
+  const m = SPAN_RE.exec((p.clean_file || p.file).split('/').pop());
+  return m ? { lo: Math.min(+m[1], +m[2]), hi: Math.max(+m[1], +m[2]) } : null;
+}
+const spanWidth = p => { const s = photoSpan(p); return s ? s.hi - s.lo : 0; };
+
+function coverPhoto(photos) {
+  if (!photos.length) return null;
+  return photos.reduce((best, p) => spanWidth(p) < spanWidth(best) ? p : best, photos[0]);
+}
+
+// One photo can be attached to several addresses, so counts dedupe by file.
+const uniqueCount = photos => new Set(photos.map(p => p.clean_file || p.file)).size;
+const isMulti = photos => yearsOf(photos).length > 1;
+
+const yearsOf = photos => [...new Set(photos.map(p => p.year).filter(Boolean))].sort();
+function yearRange(photos) {
+  const y = yearsOf(photos);
+  if (!y.length) return UNDATED.toLowerCase();
+  return y.length === 1 ? y[0] : `${y[0]}–${y[y.length - 1]}`;
+}
+
+// ── Search: forgiving address matching ───────────────────────────────────────
+// People type "22 Brown Street", "east fifth", "5th st", "tecumsh". The data says
+// "22 Brown St" and "E. Fifth St". Both sides go through the same normaliser,
+// every query word must match some word of the entry (any order), and words of
+// four or more letters may be off by one typo (two from seven letters).
+const ABBR = {
+  street: 'st', str: 'st', avenue: 'ave', av: 'ave', boulevard: 'blvd', blv: 'blvd',
+  lane: 'ln', road: 'rd', drive: 'dr', place: 'pl', court: 'ct',
+  east: 'e', west: 'w', north: 'n', south: 's',
+  first: '1st', second: '2nd', third: '3rd', fourth: '4th', fifth: '5th',
+  sixth: '6th', seventh: '7th', eighth: '8th', ninth: '9th', tenth: '10th',
+};
+function tokens(text) {
+  return String(text).toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/(\d+)\s*[-–]\s*(\d+)/g, '$1~$2')    // keep ranges as one word
+    .split(/[^a-z0-9~]+/).filter(Boolean)
+    .map(t => ABBR[t] || t);
+}
+function editDistance(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      best = Math.min(best, cur[j]);
+    }
+    if (best > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+function wordMatches(q, w, typing) {
+  if (/^\d+$/.test(q)) {
+    // A house number is matched exactly once the visitor has moved on to the
+    // street name; while it's still the word being typed, "2" may grow into "22".
+    const r = /^(\d+)~(\d+)$/.exec(w);
+    if (r) return (+q >= Math.min(+r[1], +r[2]) && +q <= Math.max(+r[1], +r[2])) || (typing && r[1].startsWith(q));
+    return typing ? w.startsWith(q) : w === q;
+  }
+  if (w.startsWith(q)) return true;
+  if (q.length < 4) return false;
+  const max = q.length >= 7 ? 2 : 1;
+  return editDistance(q, w, max) <= max || editDistance(q, w.slice(0, q.length), max) <= max;
+}
+function textMatches(queryWords, words) {
+  const last = queryWords.length - 1;
+  return queryWords.every((q, i) => words.some(w => wordMatches(q, w, i === last && !queryWords.done)));
+}
+const wordCache = new WeakMap();
+function wordsOf(obj, text) {
+  let w = wordCache.get(obj);
+  if (!w) { w = tokens(text); wordCache.set(obj, w); }
+  return w;
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let MAP = null;
+let ALL_ADDRESSES = [], ALL_SCENES = [];
+let activeAddress = null, activeYears = new Set(), searchTerm = '', searchWords = [];
+let lbEntry = null;   // the address or scene set the viewer is showing
+let HOME_RECT = null;
+let ready = false;      // false until the first load and deep link are applied
+
+// ── Load ─────────────────────────────────────────────────────────────────────
+async function loadData() {
+  const [basemap, data] = await Promise.all([
+    fetch('./basemap.json?v=' + BUILD).then(r => r.json()),
+    fetch('./data.json?v=' + BUILD).then(r => r.json()),
+  ]);
+
+  MAP = createMap(document.getElementById('map'), basemap, { onView: hidePinHover, onPopupClose: () => writeHash() });
+  addLegendMulti();
+  MAP.drawPolygon(DISTRICT_BOUNDARY, 'district-boundary');
+
+  ALL_ADDRESSES = data.addresses;
+  ALL_SCENES = data.scenes || [];
+
+  buildYearControl();
+  openDefaultGroup();
+  applyFilters();
+
+  // Frame on the photographed addresses, which is tighter than the whole basemap.
+  HOME_RECT = MAP.pinsBounds();
+  MAP.fitWorldRect(HOME_RECT, 30);
+
+  buildFeatured();
+  ready = true;
+  restoreFromHash(true);
+}
+
+// Desktop only, first load only: open the street with the most then-and-now
+// addresses, so the list shows photos before anyone clicks.
+function openDefaultGroup() {
+  if (location.hash || (window.matchMedia && matchMedia('(max-width: 760px)').matches)) return;
+  const score = {};
+  ALL_ADDRESSES.forEach(a => { if (isMulti(a.photos)) score[a.street] = (score[a.street] || 0) + 1; });
+  const best = Object.keys(score).sort((x, y) => score[y] - score[x])[0];
+  if (best) openGroups.add(best);
+}
+
+function addLegendMulti() {
+  const legend = document.querySelector('.svgmap-legend');
+  if (!legend) return;
+  const s = document.createElement('span');
+  s.className = 'legend-multi';
+  s.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"></circle></svg>several years';
+  legend.appendChild(s);
+}
+
+// ── Filtering ────────────────────────────────────────────────────────────────
+function matchesFilters(entry) {
+  if (searchWords.length && !textMatches(searchWords, wordsOf(entry, entry.address + ' ' + entry.street))) return false;
+  if (activeYears.size) {
+    const has = entry.photos.some(p => activeYears.has(p.year) || (activeYears.has('undated') && !p.year));
+    if (!has) return false;
+  }
+  return true;
+}
+function visiblePhotos(entry) {
+  if (!activeYears.size) return entry.photos;
+  return entry.photos.filter(p => activeYears.has(p.year) || (activeYears.has('undated') && !p.year));
+}
+function applyFilters({ typing = false } = {}) {
+  const filtered = ALL_ADDRESSES.filter(matchesFilters);
+  const nearby = filtered.length ? [] : nearestAddresses();
+  renderSidebar(filtered, nearby);
+  placePins(filtered.length ? filtered : nearby);
+  refreshOpenViewer();
+  syncFilterBar();
+  fitToResults(typing ? 450 : 0);
+  writeHash();
+}
+
+// The map follows the filter: frame whatever matched, or the whole district when
+// nothing is filtered. Search waits for a pause in typing so the map doesn't
+// lurch on every keystroke.
+let fitTimer = null;
+function fitToResults(delay = 0) {
+  if (!ready || !HOME_RECT || lbEntry) return;
+  clearTimeout(fitTimer);
+  fitTimer = setTimeout(() => {
+    if (!document.querySelector('.svgmap-pin')) return;     // nothing matched: leave the view alone
+    if (!activeYears.size && !searchWords.length) { MAP.fitWorldRect(HOME_RECT, 30, true); return; }
+    let [ax, ay, bx, by] = MAP.pinsBounds();
+    // One or two pins make a tiny box; keep at least a block or so around them.
+    const minW = (HOME_RECT[2] - HOME_RECT[0]) * 0.18, minH = (HOME_RECT[3] - HOME_RECT[1]) * 0.18;
+    const cx = (ax + bx) / 2, cy = (ay + by) / 2;
+    if (bx - ax < minW) { ax = cx - minW / 2; bx = cx + minW / 2; }
+    if (by - ay < minH) { ay = cy - minH / 2; by = cy + minH / 2; }
+    MAP.fitWorldRect([ax, ay, bx, by], 40, true);
+  }, delay);
+}
+
+// When a search finds nothing, offer the closest photographed addresses on the
+// street the visitor named, nearest house number first.
+function nearestAddresses() {
+  if (!searchWords.length) return [];
+  const num = searchWords.find(w => /^\d+$/.test(w));
+  const rest = searchWords.filter(w => !/^\d+$/.test(w) && !['st', 'ave', 'blvd', 'ln', 'rd'].includes(w));
+  if (!rest.length) return [];
+  const pool = ALL_ADDRESSES.filter(a => textMatches(rest, tokens(a.street)) && visiblePhotos(a).length);
+  if (!num) return pool.slice(0, 4);
+  const n = +num;
+  return pool
+    .map(a => ({ a, d: Math.abs(+houseNo(a.address) - n) }))
+    .sort((x, y) => x.d - y.d)
+    .slice(0, 4)
+    .map(x => x.a);
+}
+
+// ── Year control: chips and timeline over one shared state ───────────────────
+// activeYears is the single source of truth. Chips toggle many; the timeline
+// picks one. Both views re-sync from the set, so switching modes never lies.
+let ALL_YEARS = [], YEAR_COUNTS = {}, TL_STOPS = [], TL_POS = [];
+
+function buildYearControl() {
+  const row = document.getElementById('year-chips');
+  // Counted by file, so a wide shot attached to six addresses counts once.
+  const byYear = {};
+  ALL_ADDRESSES.forEach(a => a.photos.forEach(p => {
+    (byYear[p.year || 'undated'] ||= new Set()).add(p.clean_file || p.file);
+  }));
+  ALL_SCENES.forEach(s => (byYear[s.year || 'undated'] ||= new Set()).add('scene:' + (s.clean_file || s.original)));
+  YEAR_COUNTS = {};
+  Object.entries(byYear).forEach(([y, set]) => { YEAR_COUNTS[y] = set.size; });
+
+  ALL_YEARS = Object.keys(YEAR_COUNTS).filter(k => k !== 'undated').sort();
+  // "All years" takes the left end, dated years the middle, and undated photos a
+  // stop of their own at the right end, so phones (timeline only) can reach them.
+  TL_STOPS = ['all', ...ALL_YEARS, ...(YEAR_COUNTS.undated ? ['undated'] : [])];
+  TL_POS = timelinePositions(ALL_YEARS, !!YEAR_COUNTS.undated);
+
+  const groups = [];
+  ALL_YEARS.forEach(y => {
+    const last = groups[groups.length - 1];
+    if (YEAR_COUNTS[y] < THIN_YEAR && last) last.push(y); else groups.push([y]);
+  });
+  if (YEAR_COUNTS.undated) groups.push(['undated']);
+
+  groups.forEach(years => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.dataset.years = years.join(',');
+    const n = years.reduce((t, y) => t + YEAR_COUNTS[y], 0);
+    const label = years[0] === 'undated' ? UNDATED
+      : years.length > 1 ? `${years[0]}–${years[years.length - 1].slice(2)}` : years[0];
+    b.textContent = `${label} (${n})`;
+    b.addEventListener('click', () => {
+      const on = years.every(y => activeYears.has(y));
+      years.forEach(y => on ? activeYears.delete(y) : activeYears.add(y));
+      syncYearUI(); applyFilters();
+    });
+    row.appendChild(b);
+  });
+
+  buildTimeline(document.getElementById('timeline-main'));
+  buildTimeline(document.getElementById('timeline-lb'), true);
+
+  document.querySelectorAll('#year-mode button').forEach(b =>
+    b.addEventListener('click', () => setYearMode(b.dataset.mode)));
+  document.getElementById('filter-clear').addEventListener('click', clearFilters);
+
+  syncYearUI();
+}
+
+function setYearMode(mode) {
+  document.body.classList.toggle('timeline-mode', mode === 'timeline');
+  document.querySelectorAll('#year-mode button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+  syncYearUI();
+}
+
+function clearFilters() {
+  activeYears.clear();
+  searchInput.value = ''; searchTerm = ''; searchWords = [];
+  syncYearUI(); applyFilters();
+}
+
+// Years sit at their true distance from each other, so the 1988 to 1998 gap reads
+// as a gap. "All years" takes the left end; dated years fill the rest.
+const TL_ALL_PCT = 0, TL_FIRST_PCT = 9, TL_LAST_PCT = 84, TL_UNDATED_PCT = 100;
+let tlLastPct = 100;
+function yearPct(y) {
+  const y0 = +ALL_YEARS[0], y1 = +ALL_YEARS[ALL_YEARS.length - 1];
+  return TL_FIRST_PCT + (tlLastPct - TL_FIRST_PCT) * (+y - y0) / Math.max(1, y1 - y0);
+}
+function timelinePositions(years, withUndated) {
+  tlLastPct = withUndated ? TL_LAST_PCT : 100;
+  return [TL_ALL_PCT, ...years.map(yearPct), ...(withUndated ? [TL_UNDATED_PCT] : [])];
+}
+
+function buildTimeline(host, inViewer = false) {
+  host.innerHTML = `
+    <div class="tl-track" role="slider" tabindex="0" aria-label="Filter by year"
+         aria-valuemin="0" aria-valuemax="${TL_STOPS.length - 1}">
+      <div class="tl-rail"></div><div class="tl-fill"></div>
+      <div class="tl-ticks"></div><div class="tl-handle"></div>
+    </div>
+    <span class="tl-label"></span>
+    <span class="tl-count"></span>
+    ${inViewer ? '<button type="button" class="btn-clear tl-clear" hidden>✕ All years</button>' : ''}`;
+  if (inViewer) host.querySelector('.tl-clear').addEventListener('click', () => setYearStop('all'));
+
+  const track = host.querySelector('.tl-track');
+  const ticks = host.querySelector('.tl-ticks');
+
+  // Faint marks for the years nobody photographed, so the gaps are visible.
+  const y0 = +ALL_YEARS[0], y1 = +ALL_YEARS[ALL_YEARS.length - 1];
+  for (let y = y0; y <= y1; y++) {
+    if (YEAR_COUNTS[String(y)]) continue;
+    const t = document.createElement('div');
+    t.className = 'tl-tick tl-minor';
+    t.style.left = yearPct(y) + '%';
+    ticks.appendChild(t);
+  }
+
+  TL_STOPS.forEach((stop, i) => {
+    const t = document.createElement('div');
+    t.className = 'tl-tick' + (stop === 'all' ? '' : ' has');
+    t.style.left = TL_POS[i] + '%';
+    t.dataset.stop = stop;
+    ticks.appendChild(t);
+  });
+
+  // Label the ends, then the best-documented years that fit without colliding.
+  // Two sets: a wide one for desktop and a sparser one for phones.
+  const last = TL_STOPS.length - 1;
+  const lastYear = TL_STOPS.lastIndexOf(ALL_YEARS[ALL_YEARS.length - 1]);
+  const labelSet = (seed, gap, cls) => {
+    const chosen = [...seed];
+    TL_STOPS.map((stop, i) => i).filter(i => !chosen.includes(i) && TL_STOPS[i] !== 'undated')
+      .sort((a, b) => YEAR_COUNTS[TL_STOPS[b]] - YEAR_COUNTS[TL_STOPS[a]])
+      .forEach(i => { if (chosen.every(j => Math.abs(TL_POS[i] - TL_POS[j]) >= gap)) chosen.push(i); });
+    chosen.sort((a, b) => a - b).forEach(i => {
+      const stop = TL_STOPS[i];
+      const lab = document.createElement('span');
+      lab.className = `tl-ticklabel ${cls}` + (i === 0 ? ' first' : i === last ? ' last' : '');
+      lab.style.left = TL_POS[i] + '%';
+      lab.textContent = stop === 'all' ? 'All'
+        : stop === 'undated' ? (cls === 'wide' ? 'Undated' : '?')
+        : (i === 1 || i === lastYear ? stop : "'" + stop.slice(2));
+      ticks.appendChild(lab);
+    });
+  };
+  labelSet([...new Set([0, 1, lastYear, last])], 8, 'wide');
+  labelSet([...new Set([0, lastYear, last])], 22, 'narrow');
+
+  // Snap to the nearest stop by position, not by index, now that spacing is real.
+  const pick = clientX => {
+    const r = track.getBoundingClientRect();
+    const pct = Math.min(100, Math.max(0, (clientX - r.left) / r.width * 100));
+    let best = 0;
+    TL_POS.forEach((p, i) => { if (Math.abs(p - pct) < Math.abs(TL_POS[best] - pct)) best = i; });
+    setYearStop(TL_STOPS[best]);
+  };
+  let sliding = false;
+  track.addEventListener('pointerdown', e => {
+    sliding = true; track.setPointerCapture(e.pointerId); pick(e.clientX);
+  });
+  track.addEventListener('pointermove', e => { if (sliding) pick(e.clientX); });
+  track.addEventListener('pointerup', () => { sliding = false; });
+  track.addEventListener('pointercancel', () => { sliding = false; });
+  track.addEventListener('keydown', e => {
+    const i = currentStopIndex();
+    if (e.key === 'ArrowRight') { setYearStop(TL_STOPS[Math.min(TL_STOPS.length - 1, i + 1)]); e.preventDefault(); }
+    if (e.key === 'ArrowLeft')  { setYearStop(TL_STOPS[Math.max(0, i - 1)]); e.preventDefault(); }
+  });
+}
+
+function currentStopIndex() {
+  if (activeYears.size !== 1) return 0;
+  const only = [...activeYears][0];
+  const i = TL_STOPS.indexOf(only);
+  return i < 0 ? 0 : i;
+}
+
+function setYearStop(stop) {
+  activeYears.clear();
+  if (stop && stop !== 'all') activeYears.add(stop);
+  syncYearUI();
+  applyFilters();
+}
+
+// Human description of the active year filter: "1973", "1975–78", "Date unknown".
+function yearsText() {
+  const ys = [...activeYears].filter(y => y !== 'undated').sort();
+  const parts = [];
+  if (ys.length) {
+    const contiguous = ys.every((y, i) => !i || ALL_YEARS.indexOf(y) === ALL_YEARS.indexOf(ys[i - 1]) + 1);
+    if (ys.length === 1) parts.push(ys[0]);
+    else if (contiguous) parts.push(`${ys[0]}–${ys[ys.length - 1].slice(2)}`);
+    else parts.push(ys.join(', '));
+  }
+  if (activeYears.has('undated')) parts.push(UNDATED.toLowerCase());
+  return parts.join(' and ');
+}
+
+// Redraw every year control from activeYears.
+function syncYearUI() {
+  document.querySelectorAll('.chip[data-years]').forEach(c =>
+    c.classList.toggle('on', c.dataset.years.split(',').every(y => activeYears.has(y))));
+
+  const i = currentStopIndex();
+  const onTrack = activeYears.size === 1 && TL_STOPS.includes([...activeYears][0]);
+  const label = !activeYears.size ? 'All years' : yearsText().replace(/^./, c => c.toUpperCase());
+
+  // While the viewer is open, dim the years this address has nothing from.
+  const present = lbYears();
+
+  document.querySelectorAll('.timeline').forEach(host => {
+    const isLb = host.id === 'timeline-lb';
+    const pct = onTrack ? TL_POS[i] : 0;
+    host.querySelector('.tl-handle').style.left = pct + '%';
+    host.querySelector('.tl-handle').style.opacity = activeYears.size && !onTrack ? '.35' : '1';
+    host.querySelector('.tl-fill').style.width = pct + '%';
+    host.querySelector('.tl-track').setAttribute('aria-valuenow', onTrack ? i : 0);
+    host.querySelector('.tl-track').setAttribute('aria-valuetext', label);
+    host.querySelectorAll('.tl-tick[data-stop]').forEach(t =>
+      t.classList.toggle('dim', isLb && present && t.dataset.stop !== 'all' && !present.has(t.dataset.stop)));
+    host.querySelector('.tl-label').textContent = label;
+    host.querySelector('.tl-count').textContent =
+      onTrack ? `${YEAR_COUNTS[TL_STOPS[i]] || 0} photos` : '';
+    const clr = host.querySelector('.tl-clear');
+    if (clr) clr.hidden = !activeYears.size;
+  });
+  syncFilterBar();
+}
+
+function syncFilterBar() {
+  const bar = document.getElementById('filter-bar');
+  if (!bar) return;
+  const parts = [];
+  if (activeYears.size) parts.push(`photos from <b>${esc(yearsText())}</b>`);
+  if (searchTerm) parts.push(`matching <b>“${esc(searchTerm)}”</b>`);
+  bar.hidden = !parts.length;
+  if (!parts.length) return;
+  document.getElementById('filter-bar-text').innerHTML = `Showing ${parts.join(' ')}`;
+  document.getElementById('filter-clear').textContent =
+    activeYears.size && !searchTerm ? '✕ Show all years' : '✕ Clear filter';
+}
+
+// Years available for whatever the viewer currently shows, or null when closed.
+function lbYears() {
+  if (!lbEntry) return null;
+  const src = lbEntry.photos || [];
+  const set = new Set(src.map(p => p.year).filter(Boolean));
+  if (src.some(p => !p.year)) set.add('undated');
+  return set;
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+const openGroups = new Set();          // streets the user has opened, by name
+
+function renderSidebar(addresses, nearby = []) {
+  const list = document.getElementById('addr-list');
+  const countEl = document.getElementById('sidebar-count');
+  list.innerHTML = '';
+
+  const scenes = filteredScenes();
+  const totalPhotos = uniqueCount(addresses.flatMap(visiblePhotos)) + scenes.length;
+  countEl.textContent =
+    `${addresses.length} address${addresses.length !== 1 ? 'es' : ''} · ${totalPhotos} photo${totalPhotos !== 1 ? 's' : ''}`;
+
+  if (!addresses.length) {
+    const yearsTxt = activeYears.size ? ` from ${[...activeYears].map(y => y === 'undated' ? UNDATED.toLowerCase() : y).join(', ')}` : '';
+    const what = searchTerm ? `No photos of “${esc(searchTerm)}”${yearsTxt} yet` : `No photos${yearsTxt} yet`;
+    list.innerHTML = `<div class="empty-note"><strong>${what}</strong>
+      ${activeYears.size ? 'Try another year, or clear the year filter.' : 'Check the spelling, or try just the street name.'}</div>`;
+    if (nearby.length) {
+      const sub = document.createElement('div');
+      sub.className = 'empty-sub';
+      sub.textContent = 'Nearest addresses with photos';
+      const grid = document.createElement('div');
+      grid.className = 'tile-grid';
+      nearby.forEach(a => grid.appendChild(makeAddressTile(a, new Map())));
+      list.append(sub, grid);
+    }
+    list.appendChild(shareNote(searchTerm, true));
+    if (!scenes.length) return;
+  }
+
+  // (The street loop below is a no-op when no address matched; scenes still render.)
+  // A search or year filter is a request to see inside, so groups open then.
+  const forceOpen = !!searchTerm || activeYears.size > 0;
+  const grouped = {};
+  addresses.forEach(a => (grouped[a.street] ||= []).push(a));
+
+  // Count how many visible tiles would end up on each cover, so only genuinely
+  // repeated ones get labelled.
+  const coverUse = new Map();
+  addresses.forEach(a => {
+    const c = coverPhoto(visiblePhotos(a));
+    if (c) coverUse.set(c.clean_file, (coverUse.get(c.clean_file) || 0) + 1);
+  });
+
+  const frag = document.createDocumentFragment();
+
+  Object.keys(grouped).sort().forEach(street => {
+    const entries = grouped[street];
+    const n = uniqueCount(entries.flatMap(visiblePhotos));
+    frag.appendChild(makeGroup({
+      key: street,
+      title: street,
+      meta: `${entries.length} addr · ${n} photos`,
+      open: forceOpen || openGroups.has(street),
+      tiles: buildStreetTiles(entries, coverUse),
+    }));
+  });
+
+  // Streetscapes are not tied to an address, so they get their own group rather
+  // than the separate tab this used to need.
+  if (scenes.length) {
+    frag.appendChild(makeGroup({
+      key: '__scenes',
+      title: 'Streetscapes',
+      meta: `${scenes.length} view${scenes.length !== 1 ? 's' : ''}`,
+      open: forceOpen || openGroups.has('__scenes'),
+      scenes: true,
+      tiles: scenes.map((sc, i) => makeTile({
+        key: 'scene:' + i,
+        cover: sceneAsPhoto(sc),
+        title: sc.caption,
+        meta: sc.year || UNDATED,
+        active: false,
+        onClick: () => openViewer({
+          title: 'Streetscapes',
+          entry: { photos: scenes.map(sceneAsPhoto), description: sc.description || '' },
+          photos: scenes.map(sceneAsPhoto),
+          startIndex: i,
+          subtitle: `${scenes.length} view${scenes.length !== 1 ? 's' : ''} · Oregon Historic District`,
+        }) || pushViewerState(),
+      })),
+    }));
+  }
+
+  list.appendChild(frag);
+  if (addresses.length) list.appendChild(shareNote());
+  list.appendChild(aboutNote());
+}
+
+// What the collection is, from the data itself, plus OHDS's own account of it
+// when PROVENANCE is filled in.
+function aboutNote() {
+  const d = document.createElement('details');
+  d.className = 'about-note';
+  const all = ALL_ADDRESSES.flatMap(a => a.photos);
+  const total = uniqueCount(all) + ALL_SCENES.length;
+  const multi = ALL_ADDRESSES.filter(a => isMulti(a.photos)).length;
+  d.innerHTML = `<summary>About this archive</summary>
+    ${PROVENANCE ? `<p>${esc(PROVENANCE)}</p>` : ''}
+    <p>${total} photographs of the Oregon Historic District in Dayton, Ohio, taken between ${ALL_YEARS[0]} and ${ALL_YEARS[ALL_YEARS.length - 1]}: ${uniqueCount(all)} of buildings at ${ALL_ADDRESSES.length} addresses and ${ALL_SCENES.length} streetscapes. ${multi} addresses were photographed in more than one year; they carry an amber ring on the map and open into Compare years.</p>
+    <p>A photo that shows a row of buildings is listed under each address in it, so some photos appear more than once. Locations are approximate.</p>`;
+  return d;
+}
+
+function shareNote(place = '', missing = false) {
+  const div = document.createElement('div');
+  div.className = 'share-note';
+  div.innerHTML = missing
+    ? `Have a photo of this building? <a href="${shareHref(place)}" target="_blank" rel="noopener">Share it with OHDS</a> and help fill the gap.`
+    : `Have old photos of the district? <a href="${shareHref('')}" target="_blank" rel="noopener">Share them with OHDS</a>.`;
+  return div;
+}
+
+// Consecutive addresses whose cover resolves to the same photo are folded into one
+// cluster tile. Nothing is removed: the cluster expands in place to the real tiles,
+// and selecting an address from the map or a deep link opens its cluster first.
+function buildStreetTiles(entries, coverUse) {
+  // Group by cover rather than by adjacency: the addresses a wide shot covers are
+  // not always contiguous once a filter is applied, and leaving the gaps out would
+  // still show the same photo twice in one street.
+  const runs = new Map();          // cover file -> entries, in first-seen order
+  const order = [];
+  entries.forEach(entry => {
+    const cover = coverPhoto(visiblePhotos(entry));
+    const key = cover ? cover.clean_file : '\u0000none:' + entry.address;
+    if (!runs.has(key)) { runs.set(key, { cover, list: [] }); order.push(key); }
+    runs.get(key).list.push(entry);
+  });
+
+  return order.map(key => {
+    const { cover, list } = runs.get(key);
+    return list.length > 1 ? makeCluster(list, cover) : makeAddressTile(list[0], coverUse);
+  });
+}
+
+function makeAddressTile(entry, coverUse) {
+  const shown = visiblePhotos(entry);
+  const cover = coverPhoto(shown);
+  const sp = cover && photoSpan(cover);
+  const shared = cover && coverUse.get(cover.clean_file) > 1;
+  return makeTile({
+    key: entry.address,
+    cover,
+    title: entry.address,
+    meta: yearRange(shown),
+    count: shown.length,
+    span: shared && sp ? `${sp.lo}–${sp.hi}` : null,
+    active: entry.address === activeAddress,
+    onClick: () => selectAddress(entry),
+  });
+}
+
+const houseNo = a => { const m = /^(\d+)/.exec(a); return m ? m[1] : a; };
+
+function makeCluster(run, cover) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cluster collapsed';
+
+  const street = run[0].street;
+  // Prefer the span the photo itself claims; it is the truthful extent of the shot
+  // even when the filter leaves gaps in which of those addresses are on screen.
+  const sp = cover && photoSpan(cover);
+  const nums = run.map(e => +houseNo(e.address)).sort((a, b) => a - b);
+  const lo = sp ? Math.min(sp.lo, nums[0]) : nums[0];
+  const hi = sp ? Math.max(sp.hi, nums[nums.length - 1]) : nums[nums.length - 1];
+  const label = `${lo}–${hi} ${street}`;
+  const allShown = run.flatMap(visiblePhotos);
+
+  const head = document.createElement('button');
+  head.type = 'button';
+  head.className = 'tile cluster-head';
+  head.setAttribute('aria-expanded', 'false');
+  head.innerHTML = `
+    ${cover ? `<img class="tile-img" src="${thumbSrc(cover)}" alt="${esc(label)}" loading="lazy" decoding="async">` : ''}
+    <span class="tile-span">▭ one shared view</span>
+    <span class="tile-body">
+      <span class="tile-addr">${label}</span>
+      <span class="tile-meta">${run.length} addresses · ${yearRange(allShown)}</span>
+      <span class="cluster-cta">Show ${run.length} addresses</span>
+    </span>`;
+
+  const members = run.map(entry => {
+    const t = makeAddressTile(entry, new Map());   // members never re-badge as shared
+    t.classList.add('member');
+    return t;
+  });
+
+  head.addEventListener('click', () => {
+    const open = wrap.classList.toggle('collapsed') === false;
+    head.setAttribute('aria-expanded', String(open));
+    head.querySelector('.cluster-cta').textContent = open ? 'Hide' : `Show ${run.length} addresses`;
+  });
+
+  wrap.append(head, ...members);
+  return wrap;
+}
+
+function makeGroup({ key, title, meta, open, tiles, scenes = false }) {
+  const group = document.createElement('div');
+  group.className = 'street-group' + (open ? '' : ' collapsed') + (scenes ? ' scenes' : '');
+  group.dataset.street = key;
+
+  const head = document.createElement('button');
+  head.type = 'button';
+  head.className = 'street-head';
+  head.setAttribute('aria-expanded', String(!!open));
+  head.innerHTML = `
+    <span class="street-head-left">
+      <span class="street-chevron">▼</span>
+      <span class="street-name">${title}</span>
+    </span>
+    <span class="street-photo-count">${meta}</span>`;
+  head.addEventListener('click', () => {
+    const nowClosed = group.classList.toggle('collapsed');
+    nowClosed ? openGroups.delete(key) : openGroups.add(key);
+    head.setAttribute('aria-expanded', String(!nowClosed));
+  });
+
+  const grid = document.createElement('div');
+  grid.className = 'tile-grid';
+  tiles.forEach(t => grid.appendChild(t));
+
+  group.append(head, grid);
+  return group;
+}
+
+function makeTile({ key, cover, title, meta, count, span = null, active, onClick }) {
+  const tile = document.createElement('button');
+  tile.type = 'button';
+  tile.className = 'tile' + (active ? ' active' : '');
+  tile.dataset.address = key;
+  tile.innerHTML = `
+    ${cover
+      ? `<img class="tile-img" src="${thumbSrc(cover)}" alt="${esc(title)}" loading="lazy" decoding="async">`
+      : `<div class="tile-img none">no photo</div>`}
+    ${span ? `<span class="tile-span" title="One wide shot covering ${span}">▭ ${span}</span>` : ''}
+    ${count != null ? `<span class="tile-count">${count}</span>` : ''}
+    <span class="tile-body">
+      <span class="tile-addr">${title}</span>
+      <span class="tile-meta">${meta}</span>
+    </span>`;
+  tile.addEventListener('click', onClick);
+  if (!String(key).startsWith('scene:')) {
+    const on = () => MAP && MAP.hoverPin(key), off = () => MAP && MAP.hoverPin(null);
+    tile.addEventListener('mouseenter', on); tile.addEventListener('focus', on);
+    tile.addEventListener('mouseleave', off); tile.addEventListener('blur', off);
+  }
+  return tile;
+}
+
+// ── Streetscapes data ────────────────────────────────────────────────────────
+function sceneAsPhoto(s) {
+  return { clean_file: s.clean_file || ('_scenes/' + s.original), file: s.file,
+           year: s.year, caption: s.caption };
+}
+function filteredScenes() {
+  return ALL_SCENES.filter(s => {
+    if (activeYears.size && !(activeYears.has(s.year) || (activeYears.has('undated') && !s.year))) return false;
+    if (searchWords.length && !textMatches(searchWords, wordsOf(s, s.caption))) return false;
+    return true;
+  });
+}
+
+// ── Pins ─────────────────────────────────────────────────────────────────────
+function placePins(addresses) {
+  MAP.clearPins();
+  addresses.forEach(entry => {
+    if (!entry.lat || !entry.lon) return;
+    const shown = visiblePhotos(entry);
+    MAP.addPin(entry.address, entry.lat, entry.lon, {
+      weight: shown.length,
+      data: entry,
+      className: isMulti(shown) ? 'multi' : '',
+      onClick: rec => { hidePinHover(); hideFeatured(); setActive(entry.address); MAP.openPopup(rec, buildPopup(entry)); writeHash(); },
+      onHover: (rec, on) => on ? showPinHover(rec, entry) : hidePinHover(),
+    });
+  });
+  if (activeAddress) MAP.setPinState(activeAddress, 'active');
+}
+
+let pinHoverEl = null;
+function showPinHover(rec, entry) {
+  if (MAP.popupPin === rec) return;          // the popup already shows all of this
+  const shown = visiblePhotos(entry);
+  const cover = coverPhoto(shown);
+  if (!pinHoverEl) {
+    pinHoverEl = document.createElement('div');
+    pinHoverEl.className = 'pin-hover';
+    pinHoverEl.setAttribute('aria-hidden', 'true');
+    document.getElementById('map').appendChild(pinHoverEl);
+  }
+  pinHoverEl.innerHTML = `
+    ${cover ? `<img src="${thumbSrc(cover)}" alt="">` : ''}
+    <div class="pin-hover-body">
+      <b>${esc(entry.address)}</b>
+      <span>${shown.length} photo${shown.length !== 1 ? 's' : ''} · ${yearRange(shown)}</span>
+      <em>${isMulti(shown) ? 'Several years · click to compare' : 'Click to see the photos'}</em>
+    </div>`;
+  const { x, y } = MAP.screenOf(rec);
+  pinHoverEl.style.left = Math.min(Math.max(x, 130), document.getElementById('map').clientWidth - 130) + 'px';
+  pinHoverEl.style.top = y + 'px';
+  pinHoverEl.classList.toggle('below', y < 250);   // flip under the dot near the top edge
+  pinHoverEl.hidden = false;
+}
+function hidePinHover() { if (pinHoverEl) pinHoverEl.hidden = true; }
+
+function buildPopup(entry) {
+  const shown = visiblePhotos(entry);
+  const div = document.createElement('div');
+  const cover = coverPhoto(shown);
+  const coverIdx = Math.max(0, shown.indexOf(cover));
+  const desc = (entry.description || '').trim();
+
+  div.innerHTML = `
+    <button type="button" class="popup-close" aria-label="Close">✕</button>
+    ${cover ? `<img class="popup-thumb" src="${thumbSrc(cover)}" alt="${esc(captionOf(cover))}" loading="lazy">` : ''}
+    <div class="popup-body">
+      <h3>${esc(entry.address)}</h3>
+      <div class="popup-meta">${shown.length} photo${shown.length !== 1 ? 's' : ''} · ${yearRange(shown)}</div>
+      ${desc ? `<div class="popup-desc">${esc(desc)}</div>` : ''}
+      ${shown.length > 1 ? '<div class="popup-gallery"></div>' : ''}
+      <button class="popup-btn">View all photos</button>
+    </div>`;
+
+  let previewIndex = coverIdx;
+  const gallery = div.querySelector('.popup-gallery');
+  if (gallery) {
+    shown.forEach((p, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'popup-gthumb' + (i === coverIdx ? ' current' : '');
+      b.title = p.year || UNDATED;
+      b.innerHTML = `<img src="${thumbSrc(p)}" alt="${esc(captionOf(p))}" loading="lazy"><span>${p.year || 'Undated'}</span>`;
+      b.addEventListener('click', ev => {
+        ev.stopPropagation();
+        previewIndex = i;
+        const big = div.querySelector('.popup-thumb');
+        if (big) big.src = thumbSrc(p);
+        div.querySelector('.popup-meta').textContent =
+          `${p.year || UNDATED.toLowerCase()} · photo ${i + 1} of ${shown.length}`;
+        gallery.querySelectorAll('.popup-gthumb').forEach((el, n) => el.classList.toggle('current', n === i));
+      });
+      gallery.appendChild(b);
+    });
+  }
+
+  div.querySelector('.popup-close').addEventListener('click', ev => { ev.stopPropagation(); MAP.closePopup(); });
+  div.querySelector('.popup-btn').addEventListener('click', () => openLightbox(entry));
+  const big = div.querySelector('.popup-thumb');
+  if (big) {
+    big.title = 'Open this photo';
+    big.addEventListener('click', () => openLightbox(entry, previewIndex));
+  }
+  return div;
+}
+
+// ── Selection ────────────────────────────────────────────────────────────────
+function setActive(address) {
+  activeAddress = address;
+  document.querySelectorAll('.tile').forEach(el => el.classList.toggle('active', el.dataset.address === address));
+  const tile = document.querySelector('.tile.active');
+  if (tile) {
+    tile.closest('.street-group')?.classList.remove('collapsed');
+    const cluster = tile.closest('.cluster');
+    if (cluster && cluster.classList.contains('collapsed')) {
+      cluster.classList.remove('collapsed');
+      const head = cluster.querySelector('.cluster-head');
+      head.setAttribute('aria-expanded', 'true');
+      head.querySelector('.cluster-cta').textContent = 'Hide';
+    }
+    tile.scrollIntoView({ block: 'nearest' });
+  }
+  MAP.setPinState(address, 'active');
+}
+
+function selectAddress(entry) {
+  setActive(entry.address);
+  document.body.classList.remove('list-open');
+  if (entry.lat && entry.lon) {
+    MAP.flyToLatLon(entry.lat, entry.lon, Math.max(MAP.zoom, 6));
+    setTimeout(() => { MAP.openPopupFor(entry.address, buildPopup(entry)); writeHash(); }, 440);
+  } else {
+    openLightbox(entry);
+  }
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+const searchInput = document.getElementById('search-input');
+searchInput.addEventListener('input', function () {
+  searchTerm = this.value.trim();
+  searchWords = tokens(searchTerm);
+  searchWords.done = /\s$/.test(this.value);      // a trailing space means the last word is finished
+  if (searchTerm) hideFeatured();
+  applyFilters({ typing: true });
+});
+document.getElementById('search-clear').addEventListener('click', () => {
+  searchInput.value = ''; searchTerm = ''; searchWords = []; applyFilters(); searchInput.focus();
+});
+
+// ── Lightbox ─────────────────────────────────────────────────────────────────
+let lbPhotos = [], lbIndex = 0, compareMode = false, comparePick = null;
+
+function openLightbox(entry, startIndex = 0) {
+  const shown = visiblePhotos(entry);
+  openViewer({
+    title: entry.address,
+    entry,
+    photos: shown,
+    startIndex,
+    subtitle: `${shown.length} photo${shown.length !== 1 ? 's' : ''} · ${yearRange(shown)} · ${entry.street}`,
+    canCompare: yearsOf(shown).length > 1,
+  });
+  pushViewerState();
+}
+
+// The year control stays live while the viewer is open, so re-run the open entry
+// through the current filter instead of closing on the user.
+function refreshOpenViewer() {
+  if (!lbEntry) return;
+  if (lbEntry.address) {
+    const shown = visiblePhotos(lbEntry);
+    if (!shown.length) { showViewerEmpty(); return; }
+    openViewer({
+      title: lbEntry.address,
+      entry: lbEntry,
+      photos: shown,
+      startIndex: 0,
+      subtitle: `${shown.length} photo${shown.length !== 1 ? 's' : ''} · ${yearRange(shown)} · ${lbEntry.street}`,
+      canCompare: yearsOf(shown).length > 1,
+    });
+  } else {
+    const scenes = filteredScenes();
+    if (!scenes.length) { showViewerEmpty(); return; }
+    openViewer({
+      title: 'Streetscapes',
+      entry: { photos: scenes.map(sceneAsPhoto), description: '' },
+      photos: scenes.map(sceneAsPhoto),
+      startIndex: 0,
+      subtitle: `${scenes.length} view${scenes.length !== 1 ? 's' : ''} · Oregon Historic District`,
+    });
+  }
+}
+
+function showViewerEmpty() {
+  document.getElementById('lb-img').removeAttribute('src');
+  document.getElementById('lb-thumbs').innerHTML = '';
+  document.getElementById('lb-counter').textContent = '';
+  document.getElementById('lb-caption').textContent = 'Nothing here from the selected year.';
+  document.getElementById('lb-compare').style.display = 'none';
+  document.getElementById('lb-stage').classList.remove('compare');
+  document.getElementById('lb-compare-note').hidden = true;
+  document.getElementById('lb-caption').hidden = false;
+}
+
+function openViewer({ title, entry = null, photos, startIndex = 0, subtitle = '', canCompare = false }) {
+  if (!photos.length) return;
+  lbPhotos = photos; lbIndex = startIndex; lbEntry = entry;
+  compareMode = false; comparePick = null;
+  document.getElementById('lb-title').textContent = title;
+  document.getElementById('lb-subtitle').textContent = subtitle;
+  document.getElementById('lb-share').href = shareHref(entry && entry.address ? entry.address : '');
+
+  const descEl = document.getElementById('lb-desc');
+  const desc = ((entry && entry.description) || '').trim();
+  descEl.textContent = desc;
+  descEl.hidden = !desc;
+  const cmpBtn = document.getElementById('lb-compare');
+  cmpBtn.style.display = canCompare ? 'block' : 'none';
+  cmpBtn.classList.remove('on');
+  cmpBtn.textContent = 'Compare years';
+  document.getElementById('lb-stage').classList.remove('compare');
+  document.getElementById('lb-compare-note').hidden = true;
+  document.getElementById('lb-caption').hidden = false;
+  buildThumbs();
+  showPhoto(lbIndex);
+  const lb = document.getElementById('lightbox');
+  if (!lb.classList.contains('open')) {
+    lastFocus = document.activeElement;
+    lb.classList.add('open');
+    setBackgroundInert(true);
+    document.getElementById('lb-close').focus();
+  }
+  syncYearUI();            // dims the years this entry has nothing from
+}
+
+// While the viewer is open, everything behind it is inert, so Tab stays inside
+// the dialog and screen readers don't wander into the map.
+let lastFocus = null;
+function setBackgroundInert(on) {
+  document.querySelectorAll('.site-nav, .toolbar, .layout').forEach(el => {
+    if (on) el.setAttribute('inert', ''); else el.removeAttribute('inert');
+  });
+}
+
+function buildThumbs() {
+  const c = document.getElementById('lb-thumbs');
+  c.innerHTML = '';
+  lbPhotos.forEach((p, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lb-thumb' + (i === lbIndex ? ' active' : '');
+    b.title = p.year || UNDATED;
+    b.setAttribute('aria-label', `${p.year || UNDATED}: ${captionOf(p)}`);
+    const img = document.createElement('img');
+    img.src = thumbSrc(p);
+    img.loading = 'lazy';
+    img.alt = '';
+    b.appendChild(img);
+    b.addEventListener('click', () => compareMode ? setComparePick(i) : showPhoto(i));
+    c.appendChild(b);
+  });
+}
+
+function showPhoto(index) {
+  lbIndex = index;
+  const p = lbPhotos[index];
+  const img = document.getElementById('lb-img');
+  img.src = viewSrc(p);
+  img.alt = captionOf(p) || `${document.getElementById('lb-title').textContent} ${p.year || ''}`.trim();
+  document.getElementById('lb-counter').textContent = `${index + 1} / ${lbPhotos.length}`;
+  document.getElementById('lb-caption').textContent =
+    captionOf(p) + (p.year ? '' : ` (${UNDATED.toLowerCase()})`);
+  document.getElementById('lb-full').href = fullSrc(p);
+  document.getElementById('main-tag').textContent = p.year || UNDATED;
+  document.querySelectorAll('.lb-thumb').forEach((el, i) => {
+    el.classList.toggle('active', i === index);
+    el.setAttribute('aria-current', i === index ? 'true' : 'false');
+  });
+  document.querySelector('.lb-thumb.active')?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+  if (compareMode) updateComparePane();
+  [index - 1, index + 1].forEach(i => { if (lbPhotos[i]) new Image().src = viewSrc(lbPhotos[i]); });
+}
+
+function setComparePick(i) {
+  comparePick = i;
+  updateComparePane();
+}
+function updateComparePane() {
+  if (comparePick == null) {
+    const cur = lbPhotos[lbIndex].year;
+    let best = null, bestGap = -1;
+    lbPhotos.forEach((p, i) => {
+      if (i === lbIndex || !p.year || !cur) return;
+      const gap = Math.abs(+p.year - +cur);
+      if (gap > bestGap) { bestGap = gap; best = i; }
+    });
+    comparePick = best != null ? best : (lbIndex + 1) % lbPhotos.length;
+  }
+  const p = lbPhotos[comparePick];
+  document.getElementById('cmp-img').src = viewSrc(p);
+  document.getElementById('cmp-tag').textContent = p.year || UNDATED;
+  const a = lbPhotos[lbIndex].year || UNDATED.toLowerCase(), b = p.year || UNDATED.toLowerCase();
+  const note = document.getElementById('lb-compare-note');
+  note.textContent = `Comparing ${a} and ${b} · tap a photo below to change the right side`;
+  note.hidden = false;
+  document.getElementById('lb-caption').hidden = true;
+  document.querySelectorAll('.lb-thumb').forEach((el, n) => {
+    el.classList.toggle('cmp-pick', n === comparePick);
+    el.setAttribute('aria-pressed', String(n === comparePick));
+  });
+}
+document.getElementById('lb-compare').addEventListener('click', function () {
+  setCompareMode(!compareMode);
+});
+// In compare mode the toggle turns into a yellow exit button, and a line names
+// the two years on screen, so it is always clear how to get back out.
+function setCompareMode(on) {
+  compareMode = on;
+  const btn = document.getElementById('lb-compare');
+  btn.classList.toggle('on', on);
+  btn.textContent = on ? '✕ Exit compare' : 'Compare years';
+  document.getElementById('lb-stage').classList.toggle('compare', on);
+  if (on) { updateComparePane(); return; }
+  comparePick = null;
+  document.querySelectorAll('.lb-thumb').forEach(el => { el.classList.remove('cmp-pick'); el.removeAttribute('aria-pressed'); });
+  document.getElementById('lb-compare-note').hidden = true;
+  document.getElementById('lb-caption').hidden = false;
+}
+
+// Opening the viewer adds a history entry, so the Back button closes it. The Close
+// button and Escape go back through that same entry when there is one.
+let viewerPushed = false;
+function pushViewerState() {
+  if (restoring) return;
+  if (!viewerPushed) { history.pushState({ viewer: true }, '', hashURL()); viewerPushed = true; }
+  else writeHash();
+}
+function closeLightbox() {
+  if (viewerPushed && history.state && history.state.viewer) { history.back(); return; }   // popstate closes it
+  closeViewerUI();
+  writeHash();
+}
+function closeViewerUI() {
+  viewerPushed = false;
+  if (!document.getElementById('lightbox').classList.contains('open')) { lbEntry = null; return; }
+  document.getElementById('lightbox').classList.remove('open');
+  setBackgroundInert(false);
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  // The opener may have gone (a dismissed prompt, a re-rendered list): fall back
+  // to the selected building's tile, then the search box.
+  if (!lastFocus || document.activeElement !== lastFocus) {
+    (document.querySelector('.tile.active') || document.getElementById('search-input')).focus({ preventScroll: true });
+  }
+  lastFocus = null;
+  lbEntry = null;
+  syncYearUI();
+}
+document.getElementById('lb-close').addEventListener('click', closeLightbox);
+document.getElementById('lb-prev').addEventListener('click', () => showPhoto((lbIndex - 1 + lbPhotos.length) % lbPhotos.length));
+document.getElementById('lb-next').addEventListener('click', () => showPhoto((lbIndex + 1) % lbPhotos.length));
+// No click-outside-to-close: with photos filling the stage, a slightly missed click
+// on the arrows would end the visit. Close and Escape are the ways out.
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) {
+    if (e.key === 'Escape' && MAP && MAP.popupPin) MAP.closePopup();
+    return;
+  }
+  if (e.key === 'Escape') { compareMode ? setCompareMode(false) : closeLightbox(); return; }
+  if (e.target.closest && e.target.closest('.tl-track')) return;
+  if (e.key === 'ArrowRight') showPhoto((lbIndex + 1) % lbPhotos.length);
+  if (e.key === 'ArrowLeft') showPhoto((lbIndex - 1 + lbPhotos.length) % lbPhotos.length);
+});
+
+// ── Map controls ─────────────────────────────────────────────────────────────
+document.getElementById('reset-view').addEventListener('click', () => {
+  activeAddress = null;
+  document.querySelectorAll('.tile').forEach(el => el.classList.remove('active'));
+  MAP.setPinState(null, null);
+  MAP.closePopup();
+  MAP.fitWorldRect(HOME_RECT || MAP.pinsBounds(), 30, true);
+});
+document.getElementById('mobile-list-toggle').addEventListener('click', () => document.body.classList.add('list-open'));
+document.getElementById('list-close').addEventListener('click', () => document.body.classList.remove('list-open'));
+
+// ── First-visit prompt ───────────────────────────────────────────────────────
+function hideFeatured(remember = false) {
+  const el = document.getElementById('featured');
+  if (!el.hidden) el.hidden = true;
+  if (remember) store.set('ohd-featured-dismissed', '1');
+}
+function openCompare(entry, fromFile, toFile) {
+  const photos = visiblePhotos(entry);
+  const from = Math.max(0, photos.findIndex(p => p.clean_file === fromFile));
+  openLightbox(entry, from);
+  const to = lbPhotos.findIndex(p => p.clean_file === toFile);
+  setCompareMode(true);
+  if (to >= 0) setComparePick(to);
+}
+function showFeatured() {
+  document.body.classList.remove('list-open');
+  if (document.getElementById('featured-list').children.length) document.getElementById('featured').hidden = false;
+}
+document.getElementById('featured-open').addEventListener('click', showFeatured);
+function buildFeatured() {
+  const list = document.getElementById('featured-list');
+  FEATURED.forEach(f => {
+    const entry = ALL_ADDRESSES.find(a => a.address === f.address);
+    const from = entry && entry.photos.find(p => p.clean_file === f.from);
+    const to = entry && entry.photos.find(p => p.clean_file === f.to);
+    if (!from || !to) return;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'featured-item';
+    b.innerHTML = `<img src="${thumbSrc(from)}" alt="" loading="lazy"><span><b>${esc(entry.address)}</b>${from.year} vs ${to.year}</span>`;
+    b.addEventListener('click', () => {
+      hideFeatured(true);
+      setActive(entry.address);
+      openCompare(entry, f.from, f.to);
+    });
+    list.appendChild(b);
+  });
+  if (!list.children.length) document.getElementById('featured-open').hidden = true;
+  else if (!store.get('ohd-featured-dismissed') && !location.hash) showFeatured();
+}
+document.getElementById('featured-close').addEventListener('click', () => hideFeatured(true));
+
+// ── Site navigation ──────────────────────────────────────────────────────────
+(function siteNav() {
+  const subs = [...document.querySelectorAll('.has-sub')];
+  const closeSubs = except => subs.forEach(li => {
+    if (li === except) return;
+    li.classList.remove('open');
+    li.querySelector('.nav-sub-btn').setAttribute('aria-expanded', 'false');
+  });
+  subs.forEach(li => li.querySelector('.nav-sub-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    const open = li.classList.toggle('open');
+    e.currentTarget.setAttribute('aria-expanded', String(open));
+    closeSubs(li);
+  }));
+  const toggle = document.getElementById('nav-toggle');
+  const setMenu = open => {
+    document.body.classList.toggle('nav-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.textContent = open ? 'Close' : 'Menu';
+  };
+  toggle.addEventListener('click', e => { e.stopPropagation(); setMenu(!document.body.classList.contains('nav-open')); });
+  document.addEventListener('click', e => { if (!e.target.closest('.site-nav')) { closeSubs(); setMenu(false); } });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const wasOpen = subs.some(li => li.classList.contains('open')) || document.body.classList.contains('nav-open');
+    closeSubs(); setMenu(false);
+    if (wasOpen) toggle.offsetParent ? toggle.focus() : null;
+  });
+})();
+
+// On phones the twelve year chips don't fit; the timeline does.
+if (window.matchMedia && matchMedia('(max-width: 760px)').matches) {
+  document.body.classList.add('timeline-mode');
+  document.querySelectorAll('#year-mode button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.mode === 'timeline')));
+}
+
+// ── Deep link ────────────────────────────────────────────────────────────────
+// The URL carries the whole view: #a=<address in the viewer>, #p=<address with its
+// map popup open>, #v=scenes, #y=<years>, #q=<search>. Old #a= links still work.
+let restoring = false;
+function hashURL() {
+  const h = new URLSearchParams();
+  if (lbEntry && lbEntry.address) h.set('a', lbEntry.address);
+  else if (lbEntry) h.set('v', 'scenes');
+  else if (MAP && MAP.popupPin && MAP.popupPin.data) h.set('p', MAP.popupPin.data.address);
+  if (activeYears.size) h.set('y', [...activeYears].sort().join(','));
+  if (searchTerm) h.set('q', searchTerm);
+  const s = h.toString().replace(/\+/g, '%20');
+  return location.pathname + location.search + (s ? '#' + s : '');
+}
+function writeHash() {
+  if (!ready || restoring) return;
+  const url = hashURL();
+  if (url !== location.pathname + location.search + location.hash) history.replaceState(history.state, '', url);
+}
+function restoreFromHash(initial = false) {
+  const h = new URLSearchParams(location.hash.slice(1));
+  restoring = true;
+  const find = k => h.get(k) && ALL_ADDRESSES.find(a => a.address === h.get(k));
+  const viewer = find('a'), popup = find('p');
+  if (!viewer && h.get('v') !== 'scenes' && document.getElementById('lightbox').classList.contains('open')) closeViewerUI();
+
+  // Re-filter only when the filter itself changed, so Back out of the viewer keeps
+  // the map where the visitor left it.
+  const years = new Set((h.get('y') || '').split(',').filter(y => y === 'undated' || ALL_YEARS.includes(y)));
+  const q = h.get('q') || '';
+  const changed = q !== searchTerm || years.size !== activeYears.size || [...years].some(y => !activeYears.has(y));
+  if (changed || initial) {
+    activeYears = years;
+    searchTerm = q;
+    searchInput.value = q;
+    searchWords = tokens(q);
+    searchWords.done = true;
+    syncYearUI();
+    applyFilters();
+  }
+  if (viewer) { clearTimeout(fitTimer); setActive(viewer.address); openLightbox(viewer); }
+  else if (h.get('v') === 'scenes' && filteredScenes().length) {
+    const scenes = filteredScenes();
+    openViewer({ title: 'Streetscapes', entry: { photos: scenes.map(sceneAsPhoto), description: '' },
+      photos: scenes.map(sceneAsPhoto), subtitle: `${scenes.length} views · Oregon Historic District` });
+  } else if (popup) {
+    clearTimeout(fitTimer);
+    selectAddress(popup);
+  }
+  restoring = false;
+}
+// Back and Forward replay the URL. Leaving a viewer entry closes the viewer.
+window.addEventListener('popstate', () => {
+  viewerPushed = !!(history.state && history.state.viewer);
+  restoreFromHash();
+});
+
+loadData();
+</script>
+</body>
+</html>
