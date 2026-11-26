@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Archive Accessibility Pass</title>
+<meta name="description" content="Before-and-after review of the OHD Photo Archive accessibility changes.">
+<link rel="stylesheet" href="../fonts.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  /* Layout: a single reading column, like a municipal review memo; evidence plates break wider. */
+  :root {
+    --paper:   #f3f3f0;
+    --sheet:   #ffffff;
+    --ink:     #26282a;
+    --ink-2:   #5b5f63;
+    --rule:    #d9d9d4;
+    --amber:   #7a5d00;   /* the proposed amber, as shipped */
+    --amber-old: #d9a800; /* the amber it replaces */
+    --mark-before: #8b8f93;
+    --pass:    #2f6b3a;
+    --fail:    #a3332a;
+    --plate:   #e7e7e2;
+    --display: 'Young Serif', Georgia, 'Times New Roman', serif;
+    --body:    'Bitter', Georgia, serif;
+    --mono:    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #17191b; --sheet: #202326; --ink: #ecebe6; --ink-2: #a9acaf; --rule: #34383c;
+      --amber: #e0b23c; --amber-old: #d9a800; --mark-before: #7d8185; --pass: #7cc48a; --fail: #f08a80; --plate: #2a2d31;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #17191b; --sheet: #202326; --ink: #ecebe6; --ink-2: #a9acaf; --rule: #34383c;
+    --amber: #e0b23c; --amber-old: #d9a800; --mark-before: #7d8185; --pass: #7cc48a; --fail: #f08a80; --plate: #2a2d31;
+    color-scheme: dark;
+  }
+
+  h1, h2, h3, p, ul, ol, figure { margin: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 1rem; line-height: 1.6; }
+  .wrap {
+    max-width: 880px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 48px 72px;
+    display: flex; flex-direction: column; gap: 56px;
+  }
+  h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: 1.15; text-wrap: balance; }
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.01em; }
+  h2 { font-size: clamp(1.5rem, 3.4vw, 1.9rem); }
+  h3 { font-size: 1.15rem; }
+  p { max-width: 65ch; }
+  a { color: var(--ink); text-decoration-color: var(--amber); text-underline-offset: 3px; text-decoration-thickness: 2px; }
+  a:hover { color: var(--amber); }
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 2px; }
+  .label { font-family: var(--mono); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ── Masthead ── */
+  header { display: flex; flex-direction: column; gap: 16px; border-bottom: 1px solid var(--rule); padding-bottom: 32px; }
+  .lede { font-size: 1.12rem; color: var(--ink); }
+  .links { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: .95rem; }
+
+  .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; margin-top: 8px; }
+  .fact { background: var(--sheet); padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .fact .big { font-family: var(--display); font-size: 1.9rem; line-height: 1.1; }
+  .fact .big .from { color: var(--ink-2); font-size: 1.2rem; }
+  .fact p { font-size: .9rem; color: var(--ink-2); }
+  @media (max-width: 640px) { .facts { grid-template-columns: 1fr; } }
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+  .why { border-left: 3px solid var(--amber); padding: 2px 0 2px 16px; color: var(--ink); }
+  .why b { font-weight: 600; }
+
+  /* ── Contrast chart ── */
+  .chart { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 20px 20px 14px; display: flex; flex-direction: column; gap: 14px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .85rem; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .dot.before { background: var(--mark-before); }
+  .dot.after { background: var(--amber); }
+  .rows { display: flex; flex-direction: column; gap: 2px; }
+  .row { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 16px; align-items: center; padding: 8px 0; border-top: 1px solid var(--rule); }
+  .row:first-child { border-top: 0; }
+  .row .what { font-size: .9rem; line-height: 1.35; }
+  .row .what small { display: block; color: var(--ink-2); font-size: .8rem; }
+  .track { position: relative; height: 34px; }
+  .floor { position: absolute; top: 2px; bottom: 2px; width: 0; border-left: 1.5px dashed var(--ink-2); opacity: .55; }
+  .bar { position: absolute; top: 50%; height: 2px; background: var(--rule); transform: translateY(-50%); }
+  .mk { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px var(--sheet); cursor: default; }
+  .mk.before { background: var(--mark-before); }
+  .mk.after { background: var(--amber); }
+  .mk .tip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--sheet); font-family: var(--mono); font-size: .75rem; padding: 4px 8px; border-radius: 4px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 2; }
+  .mk:hover .tip, .mk:focus-visible .tip { opacity: 1; }
+  .val { position: absolute; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: .78rem; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .val.after { color: var(--ink); font-weight: 500; }
+  .axis { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 16px; }
+  .axis .ticks { position: relative; height: 34px; border-top: 1px solid var(--rule); }
+  .axis .t { position: absolute; top: 4px; transform: translateX(-50%); font-family: var(--mono); font-size: .72rem; color: var(--ink-2); }
+  .axis .t.floorlab { top: 18px; color: var(--ink); white-space: nowrap; }
+  @media (max-width: 640px) {
+    .row, .axis { grid-template-columns: 1fr; gap: 4px; }
+    .axis > :first-child { display: none; }
+  }
+
+  /* ── Evidence plates ── */
+  .plates { display: flex; flex-direction: column; gap: 22px; }
+  .plate { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .plate h3 { font-size: 1.05rem; }
+  .plate > p { font-size: .92rem; color: var(--ink-2); }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; align-items: start; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  figure .shot { background: var(--plate); border-radius: 4px; padding: 14px; display: flex; justify-content: center; align-items: center; }
+  figure img { display: block; max-width: 100%; height: auto; border-radius: 2px; }
+  figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: .85rem; }
+  .verdict { font-family: var(--mono); font-size: .78rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .verdict.fail { color: var(--fail); }
+  .verdict.pass { color: var(--pass); }
+  .verdict::before { margin-right: 5px; }
+  .verdict.fail::before { content: '✕'; }
+  .verdict.pass::before { content: '✓'; }
+
+  /* ── Lists and the decision box ── */
+  ul.plain { list-style: none; display: flex; flex-direction: column; gap: 10px; max-width: 68ch; padding: 0; margin: 0; }
+  ul.plain li { padding-left: 18px; position: relative; }
+  ul.plain li::before { content: ''; position: absolute; left: 0; top: .7em; width: 7px; height: 7px; border-radius: 50%; background: var(--rule); }
+  .decide { background: var(--sheet); border: 1px solid var(--amber); border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+  .opt { border: 1px solid var(--rule); border-radius: 4px; padding: 14px; display: flex; flex-direction: column; gap: 6px; font-size: .92rem; }
+  .opt .swatch { width: 100%; height: 30px; border-radius: 3px; background: var(--plate); display: flex; align-items: center; justify-content: center; }
+  .opt .swatch i { display: block; width: 70%; height: 16px; border-radius: 999px; background: #f4f4f3; }
+  .opt.a .swatch i { outline: 2px solid #7a5d00; outline-offset: 2px; }
+  .opt.b .swatch i { outline: 2px solid #1c1c1c; outline-offset: 2px; }
+  .tag { font-family: var(--mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--amber); }
+  footer { border-top: 1px solid var(--rule); padding-top: 24px; display: flex; flex-direction: column; gap: 10px; font-size: .9rem; }
+  footer ol { padding-left: 20px; display: flex; flex-direction: column; gap: 4px; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="label">OHD Photo Archive · Change review</div>
+  <h1>Archive Accessibility Pass</h1>
+  <p class="lede">Two changes, both in the page's stylesheet. Keyboard focus and small amber text now meet the WCAG AA contrast floor, and every button, chip and tile now visibly reacts when pressed. Nothing about the archive's content, layout or features moves.</p>
+  <div class="links">
+    <a href="../">Open the preview</a>
+    <a href="https://discover.oregonhistoric.org/">Compare with the live site</a>
+    <a href="https://github.com/almeidafullstack/ohds-archive/pull/1">Code change (PR #1)</a>
+  </div>
+  <div class="facts">
+    <div class="fact">
+      <span class="label">Focus ring contrast</span>
+      <span class="big num"><span class="from">2.2 →</span> 6.2:1</span>
+      <p>WCAG asks for 3:1. The old ring was barely visible on white.</p>
+    </div>
+    <div class="fact">
+      <span class="label">Controls with press feedback</span>
+      <span class="big num"><span class="from">2 →</span> 60 of 60</span>
+      <p>Every control tested now shows it registered the tap or click.</p>
+    </div>
+    <div class="fact">
+      <span class="label">Live site</span>
+      <span class="big">Unchanged</span>
+      <p>The change goes live only when the PR is merged.</p>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="label">Change 1</div>
+  <h2>Amber that can be read</h2>
+  <p>The archive's bright yellow-amber is a strong brand colour for fills, such as the selected year chip. It was also being used for thin lines and small text: the ring that shows keyboard focus, the "Featured buildings" link on hover, and the "Show 2 addresses" label on shared-view tiles. On white and light grey, those came in at 1.7 to 2.2:1.</p>
+  <p class="why"><b>Why it matters here.</b> The stylesheet was written "sized for older eyes," and keyboard users depend on the focus ring to know where they are. WCAG 2.2 sets 3:1 as the minimum for focus indicators and 4.5:1 for small text. The old amber missed both.</p>
+  <p>The fix adds one darker amber, used only where amber has to be read as a line or as text. The bright amber stays on every fill. Inside the dark photo viewer, the bright amber is the readable one, so the ring there switches to it.</p>
+
+  <div class="chart" role="figure" aria-labelledby="chart-cap">
+    <div id="chart-cap" class="label">Contrast ratio, live vs proposed</div>
+    <div class="legend">
+      <span><i class="dot before"></i>Live today</span>
+      <span><i class="dot after"></i>Proposed</span>
+      <span>Dashed lines: WCAG floors (3:1 for focus rings, 4.5:1 for small text)</span>
+    </div>
+    <div class="rows" id="rows"></div>
+    <div class="axis"><div></div><div class="ticks" id="ticks"></div></div>
+  </div>
+
+  <div class="plates">
+    <div class="plate">
+      <h3>Keyboard focus on a year chip</h3>
+      <p>Press Tab to reach a chip. The ring is how a keyboard user knows which control will respond.</p>
+      <div class="pair">
+        <figure><div class="shot"><img src="img/focus-chip-before.webp" width="242" height="118" alt="Year chip 1974 with a pale yellow focus ring that blends into the light background"></div><figcaption><span>Live today</span><span class="verdict fail">2.0:1 · below 3:1</span></figcaption></figure>
+        <figure><div class="shot"><img src="img/focus-chip-after.webp" width="242" height="118" alt="Year chip 1974 with a clearly visible dark bronze focus ring"></div><figcaption><span>Proposed</span><span class="verdict pass">5.6:1</span></figcaption></figure>
+      </div>
+    </div>
+    <div class="plate">
+      <h3>Keyboard focus on an address tile</h3>
+      <p>The same ring around a building card in the sidebar.</p>
+      <div class="pair">
+        <figure><div class="shot"><img src="img/focus-tile-before.webp" width="405" height="428" alt="Address tile for 1 Green St with a pale yellow focus outline"></div><figcaption><span>Live today</span><span class="verdict fail">2.2:1 · below 3:1</span></figcaption></figure>
+        <figure><div class="shot"><img src="img/focus-tile-after.webp" width="405" height="428" alt="Address tile for 1 Green St with a distinct bronze focus outline"></div><figcaption><span>Proposed</span><span class="verdict pass">6.2:1</span></figcaption></figure>
+      </div>
+    </div>
+    <div class="plate">
+      <h3>Amber text: link on hover and the shared-view label</h3>
+      <p>Small text in amber, the case where the old colour was weakest.</p>
+      <div class="pair">
+        <figure><div class="shot"><img src="img/hover-link-before.webp" width="306" height="76" alt="Featured buildings link on hover in pale yellow text"></div><figcaption><span>Live today</span><span class="verdict fail">2.2:1 · below 4.5:1</span></figcaption></figure>
+        <figure><div class="shot"><img src="img/hover-link-after.webp" width="306" height="76" alt="Featured buildings link on hover in dark bronze text"></div><figcaption><span>Proposed</span><span class="verdict pass">6.2:1</span></figcaption></figure>
+      </div>
+      <div class="pair">
+        <figure><div class="shot"><img src="img/cluster-before.webp" width="397" height="462" alt="Shared-view tile for 31 to 33 Green St with a pale yellow Show 2 addresses label"></div><figcaption><span>Live today</span><span class="verdict fail">2.2:1 · below 4.5:1</span></figcaption></figure>
+        <figure><div class="shot"><img src="img/cluster-after.webp" width="397" height="462" alt="Shared-view tile for 31 to 33 Green St with a dark bronze Show 2 addresses label"></div><figcaption><span>Proposed</span><span class="verdict pass">6.2:1</span></figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label">Change 2</div>
+  <h2>Every control answers a press</h2>
+  <p>On the live site, pressing a year chip, a street heading or an address tile changes nothing until the click completes. Only 2 of the 60 controls tested gave any sign they had been pressed. Each one now darkens or fills the moment it is pressed. Buttons also shrink very slightly (to 96%, cards to 98%) and ease back when released.</p>
+  <p class="why"><b>Why it matters here.</b> On a phone, a tap with no response feels like a miss, and people tap again. Over a slow connection, that second tap can open the wrong building. Visitors who have reduced motion turned on in their device settings get the colour change only, with no movement.</p>
+
+  <div class="plates">
+    <div class="plate">
+      <h3>A year chip, held down</h3>
+      <div class="pair">
+        <figure><div class="shot"><img src="img/chip-rest-after.webp" width="242" height="118" alt="Year chip 1974 at rest"></div><figcaption><span>At rest (same on both)</span></figcaption></figure>
+        <figure><div class="shot"><img src="img/press-chip-before.webp" width="242" height="118" alt="Year chip 1974 while pressed on the live site, looking unchanged"></div><figcaption><span>Pressed, live today</span><span class="verdict fail">no change</span></figcaption></figure>
+        <figure><div class="shot"><img src="img/press-chip-after.webp" width="242" height="118" alt="Year chip 1974 while pressed on the preview, filled grey and slightly smaller"></div><figcaption><span>Pressed, proposed</span><span class="verdict pass">fills, shrinks</span></figcaption></figure>
+      </div>
+    </div>
+    <div class="plate">
+      <h3>An address tile, held down</h3>
+      <p>On the live site a pressed tile keeps its hover lift. In the preview it settles, takes a dark edge and drops its shadow.</p>
+      <div class="pair">
+        <figure><div class="shot"><img src="img/press-tile-before.webp" width="405" height="428" alt="Address tile for 1 Green St while pressed on the live site, still showing its hover shadow"></div><figcaption><span>Pressed, live today</span><span class="verdict fail">no change</span></figcaption></figure>
+        <figure><div class="shot"><img src="img/press-tile-after.webp" width="405" height="428" alt="Address tile for 1 Green St while pressed on the preview, with a dark border and no shadow"></div><figcaption><span>Pressed, proposed</span><span class="verdict pass">dark edge, settles</span></figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label">Scope</div>
+  <h2>What stays the same</h2>
+  <ul class="plain">
+    <li>All content, photos, the map, search, filters, Compare years and deep links.</li>
+    <li>The bright amber on every fill: selected chips, the Clear filter button, map pins and the timeline.</li>
+    <li>Hover effects, which already worked on 57 of 60 controls.</li>
+    <li>The page still loads nothing from outside its own folder.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="label">Method</div>
+  <h2>How it was checked</h2>
+  <ul class="plain">
+    <li><b>Contrast:</b> every colour pairing was run through a WCAG contrast calculator (from the open-source <a href="https://github.com/codeswithroh/tastemaker">tastemaker</a> project). The new amber passes 4.5:1 on all five light surfaces the page uses.</li>
+    <li><b>Press, hover, focus and release:</b> an automated probe (from <a href="https://github.com/Moddingflow/better-design">better-design</a>) pressed every control in headless Chrome at desktop size, with and without reduced motion. None got stuck in a pressed state.</li>
+    <li><b>A known quirk:</b> when the probe tests many controls in a row, it misses some presses. Every control it flagged was retested on its own and passed.</li>
+    <li><b>Not yet checked:</b> Safari on iPhone, and a by-eye pass on a real phone. Both are worth five minutes before merging.</li>
+  </ul>
+</section>
+
+<section class="decide">
+  <div class="label">Decision needed</div>
+  <h2>Approve the darker focus ring?</h2>
+  <p>The new ring is the change visitors are most likely to notice. Two ways to meet the standard:</p>
+  <div class="opts">
+    <div class="opt a">
+      <div class="swatch"><i></i></div>
+      <span class="tag">In the preview</span>
+      <b>Bronze ring (6.2:1)</b>
+      <span>Stays in the archive's amber family.</span>
+    </div>
+    <div class="opt b">
+      <div class="swatch"><i></i></div>
+      <span class="tag">Alternative</span>
+      <b>Near-black ring (17:1)</b>
+      <span>Highest contrast; matches the site's dark text and borders.</span>
+    </div>
+  </div>
+  <p>Once a ring is chosen, merging PR #1 publishes both changes to the live site.</p>
+</section>
+
+<footer>
+  <div class="label">Sources</div>
+  <ol>
+    <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html">WCAG 2.2, Success Criterion 1.4.11 Non-text Contrast</a> (3:1 for focus indicators and UI parts)</li>
+    <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html">WCAG 2.2, Success Criterion 1.4.3 Contrast (Minimum)</a> (4.5:1 for small text)</li>
+    <li><a href="https://github.com/codeswithroh/tastemaker">tastemaker</a>, contrast calculator used for every ratio on this page</li>
+    <li><a href="https://github.com/Moddingflow/better-design">better-design</a>, press and focus probe</li>
+    <li><a href="https://github.com/almeidafullstack/ohds-archive/pull/1">PR #1</a>, the code change, and the <a href="../">preview site</a> it was photographed from; "Live today" images come from <a href="https://discover.oregonhistoric.org/">discover.oregonhistoric.org</a>, captured on 25 Nov 2026 at 1280×800</li>
+  </ol>
+</footer>
+
+</div>
+
+<script>
+  // Contrast ratios as measured; floor is the WCAG minimum for that use.
+  const DATA = [
+    { what: 'Focus ring on white panels', sub: 'sidebar, popups, cards', floor: 3, before: 2.20, after: 6.19 },
+    { what: 'Focus ring on light grey', sub: 'chips, search box, toolbar', floor: 3, before: 2.00, after: 5.62 },
+    { what: 'Amber text on white', sub: 'link hover, "Show 2 addresses", pin card note', floor: 4.5, before: 2.20, after: 6.19 },
+    { what: 'Amber on the page grey', sub: 'darkest light surface used', floor: 4.5, before: 1.67, after: 4.69 },
+    { what: 'Focus ring in the photo viewer', sub: 'dark background', floor: 3, before: 8.38, after: 11.77 },
+  ];
+  const MAX = 12;
+  const pct = v => (v / MAX * 100).toFixed(2) + '%';
+  const rows = document.getElementById('rows');
+  for (const d of DATA) {
+    const lo = Math.min(d.before, d.after), hi = Math.max(d.before, d.after);
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div class="what">${d.what}<small>${d.sub}</small></div>
+      <div class="track">
+        <div class="floor" style="left:${pct(d.floor)}" title="WCAG floor ${d.floor}:1"></div>
+        <div class="bar" style="left:${pct(lo)};width:calc(${pct(hi)} - ${pct(lo)})"></div>
+        <span class="val" style="right:calc(100% - ${pct(d.before)} + 12px)">${d.before.toFixed(1)}</span>
+        <span class="mk before" tabindex="0" aria-label="Live today ${d.before.toFixed(2)} to 1" style="left:${pct(d.before)}"><span class="tip">Live ${d.before.toFixed(2)}:1</span></span>
+        <span class="mk after" tabindex="0" aria-label="Proposed ${d.after.toFixed(2)} to 1" style="left:${pct(d.after)}"><span class="tip">Proposed ${d.after.toFixed(2)}:1</span></span>
+        <span class="val after" style="left:calc(${pct(d.after)} + 12px)">${d.after.toFixed(1)}</span>
+      </div>`;
+    rows.appendChild(row);
+  }
+  const ticks = document.getElementById('ticks');
+  for (const t of [0, 2, 4, 6, 8, 10, 12]) {
+    const s = document.createElement('span'); s.className = 't'; s.style.left = pct(t); s.textContent = t + ':1';
+    if (t === 0) s.style.transform = 'none';
+    if (t === 12) s.style.transform = 'translateX(-100%)';
+    ticks.appendChild(s);
+  }
+  for (const [v, txt] of [[3, '3:1 floor'], [4.5, '4.5:1']]) {
+    const s = document.createElement('span'); s.className = 't floorlab'; s.style.left = pct(v); s.textContent = txt; ticks.appendChild(s);
+  }
+</script>
+
+</body>
+</html>
