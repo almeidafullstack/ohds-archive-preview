@@ -78,7 +78,7 @@
   .why b { font-weight: 600; }
 
   /* ── Contrast chart ── */
-  .chart { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 20px 20px 14px; display: flex; flex-direction: column; gap: 14px; }
+  .chart { overflow: hidden; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 20px 20px 14px; display: flex; flex-direction: column; gap: 14px; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .85rem; color: var(--ink-2); }
   .legend span { display: inline-flex; align-items: center; gap: 7px; }
   .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
@@ -90,13 +90,14 @@
   .row .what { font-size: .9rem; line-height: 1.35; }
   .row .what small { display: block; color: var(--ink-2); font-size: .8rem; }
   .track { position: relative; height: 34px; }
-  .floor { position: absolute; top: 2px; bottom: 2px; width: 0; border-left: 1.5px dashed var(--ink-2); opacity: .55; }
+  .floor { position: absolute; top: 2px; bottom: 2px; width: 1.5px; margin-left: -.75px; background: repeating-linear-gradient(to bottom, var(--ink-2) 0 4px, transparent 4px 7px); opacity: .6; }
   .bar { position: absolute; top: 50%; height: 2px; background: var(--rule); transform: translateY(-50%); }
   .mk { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px var(--sheet); cursor: default; }
   .mk.before { background: var(--mark-before); }
   .mk.after { background: var(--amber); }
   .mk .tip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--sheet); font-family: var(--mono); font-size: .75rem; padding: 4px 8px; border-radius: 4px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 2; }
   .mk:hover .tip, .mk:focus-visible .tip { opacity: 1; }
+  .mk.edge .tip { left: auto; right: -6px; transform: none; }
   .val { position: absolute; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: .78rem; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .val.after { color: var(--ink); font-weight: 500; }
   .axis { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 16px; }
@@ -147,7 +148,7 @@
 <header>
   <div class="label">OHD Photo Archive · Change review</div>
   <h1>Archive Accessibility Pass</h1>
-  <p class="lede">Two changes, both in the page's stylesheet. Keyboard focus and small amber text now meet the WCAG AA contrast floor, and every button, chip and tile now visibly reacts when pressed. Nothing about the archive's content, layout or features moves.</p>
+  <p class="lede">Three fixes. Keyboard focus and small amber text now meet the WCAG AA contrast floor, every button, chip and tile visibly reacts when pressed, and the welcome prompt can always be closed on small phones. Nothing about the archive's content, layout or features moves.</p>
   <div class="links">
     <a href="../">Open the preview</a>
     <a href="https://discover.oregonhistoric.org/">Compare with the live site</a>
@@ -249,6 +250,14 @@
 </section>
 
 <section>
+  <div class="label">Change 3</div>
+  <h2>The welcome prompt fits small phones</h2>
+  <p>On a first visit, a "See the district change" prompt sits over the map. On shorter phones such as the iPhone SE, the prompt was taller than the map area, so its top edge slid under the search bar. That hid its title and the × that closes it, and left it covering most of the map. This was already happening on the live site.</p>
+  <p class="why"><b>Why it matters here.</b> A first-time visitor on a small phone met a box they could not dismiss, over the map they came to use.</p>
+  <p>The prompt now stops above the map buttons and scrolls inside itself when it runs out of room, so the × is always on screen.</p>
+</section>
+
+<section>
   <div class="label">Scope</div>
   <h2>What stays the same</h2>
   <ul class="plain">
@@ -266,7 +275,9 @@
     <li><b>Contrast:</b> every colour pairing was run through a WCAG contrast calculator (from the open-source <a href="https://github.com/codeswithroh/tastemaker">tastemaker</a> project). The new amber passes 4.5:1 on all five light surfaces the page uses.</li>
     <li><b>Press, hover, focus and release:</b> an automated probe (from <a href="https://github.com/Moddingflow/better-design">better-design</a>) pressed every control in headless Chrome at desktop size, with and without reduced motion. None got stuck in a pressed state.</li>
     <li><b>A known quirk:</b> when the probe tests many controls in a row, it misses some presses. Every control it flagged was retested on its own and passed.</li>
-    <li><b>Not yet checked:</b> Safari on iPhone, and a by-eye pass on a real phone. Both are worth five minutes before merging.</li>
+    <li><b>Phones:</b> a full walkthrough (load, menu, list, tile, map popup) ran in Safari's engine (WebKit) at iPhone 13 and iPhone SE sizes, and in Chrome at iPhone 13 and Pixel 7 sizes. No sideways overflow, no errors.</li>
+    <li><b>iPhone press states:</b> Safari only shows press feedback on pages that listen for touches. The archive now does, with one line of script.</li>
+    <li><b>Not yet checked:</b> a by-eye pass on a real phone.</li>
   </ul>
 </section>
 
@@ -288,7 +299,7 @@
       <span>Highest contrast; matches the site's dark text and borders.</span>
     </div>
   </div>
-  <p>Once a ring is chosen, merging PR #1 publishes both changes to the live site.</p>
+  <p>Once a ring is chosen, merging PR #1 publishes all three fixes to the live site.</p>
 </section>
 
 <footer>
@@ -299,6 +310,11 @@
     <li><a href="https://github.com/codeswithroh/tastemaker">tastemaker</a>, contrast calculator used for every ratio on this page</li>
     <li><a href="https://github.com/Moddingflow/better-design">better-design</a>, press and focus probe</li>
     <li><a href="https://github.com/almeidafullstack/ohds-archive/pull/1">PR #1</a>, the code change, and the <a href="../">preview site</a> it was photographed from; "Live today" images come from <a href="https://discover.oregonhistoric.org/">discover.oregonhistoric.org</a>, captured on 25 Nov 2026 at 1280×800</li>
+  </ol>
+  <div class="label">Changelog</div>
+  <ol>
+    <li>Added Change 3, the small-phone prompt fix, and the phone and Safari-engine testing (new data).</li>
+    <li>Fixed the contrast chart pushing this page wider than a phone screen (correction).</li>
   </ol>
 </footer>
 
@@ -313,7 +329,7 @@
     { what: 'Amber on the page grey', sub: 'darkest light surface used', floor: 4.5, before: 1.67, after: 4.69 },
     { what: 'Focus ring in the photo viewer', sub: 'dark background', floor: 3, before: 8.38, after: 11.77 },
   ];
-  const MAX = 12;
+  const MAX = 14;
   const pct = v => (v / MAX * 100).toFixed(2) + '%';
   const rows = document.getElementById('rows');
   for (const d of DATA) {
@@ -327,20 +343,16 @@
         <div class="bar" style="left:${pct(lo)};width:calc(${pct(hi)} - ${pct(lo)})"></div>
         <span class="val" style="right:calc(100% - ${pct(d.before)} + 12px)">${d.before.toFixed(1)}</span>
         <span class="mk before" tabindex="0" aria-label="Live today ${d.before.toFixed(2)} to 1" style="left:${pct(d.before)}"><span class="tip">Live ${d.before.toFixed(2)}:1</span></span>
-        <span class="mk after" tabindex="0" aria-label="Proposed ${d.after.toFixed(2)} to 1" style="left:${pct(d.after)}"><span class="tip">Proposed ${d.after.toFixed(2)}:1</span></span>
+        <span class="mk after${d.after / MAX > 0.7 ? ' edge' : ''}" tabindex="0" aria-label="Proposed ${d.after.toFixed(2)} to 1" style="left:${pct(d.after)}"><span class="tip">Proposed ${d.after.toFixed(2)}:1</span></span>
         <span class="val after" style="left:calc(${pct(d.after)} + 12px)">${d.after.toFixed(1)}</span>
       </div>`;
     rows.appendChild(row);
   }
   const ticks = document.getElementById('ticks');
-  for (const t of [0, 2, 4, 6, 8, 10, 12]) {
+  for (const t of [0, 4, 8, 12]) {
     const s = document.createElement('span'); s.className = 't'; s.style.left = pct(t); s.textContent = t + ':1';
     if (t === 0) s.style.transform = 'none';
-    if (t === 12) s.style.transform = 'translateX(-100%)';
     ticks.appendChild(s);
-  }
-  for (const [v, txt] of [[3, '3:1 floor'], [4.5, '4.5:1']]) {
-    const s = document.createElement('span'); s.className = 't floorlab'; s.style.left = pct(v); s.textContent = txt; ticks.appendChild(s);
   }
 </script>
 
